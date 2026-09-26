@@ -1,0 +1,11 @@
+services:
+  _defaults: { autowire: true, autoconfigure: true }
+  App\:
+    resource: '../src/'
+    exclude: '../src/Kernel.php'
+  PDO:
+    class: PDO
+    factory: ['App\Service\Database', 'connect']
+  Symfony\Contracts\HttpClient\HttpClientInterface:
+    class: Symfony\Component\HttpClient\HttpClient
+    factory: ['Symfony\Component\HttpClient\HttpClient', 'create']

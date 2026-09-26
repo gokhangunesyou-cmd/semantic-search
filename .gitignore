@@ -1,0 +1,11 @@
+.env
+!search-api/.env
+**/vendor/
+**/var/
+**/.venv/
+**/__pycache__/
+**/.pytest_cache/
+data/*
+!data/.gitkeep
+models/
+.DS_Store

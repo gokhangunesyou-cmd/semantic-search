@@ -1,0 +1,116 @@
+name: semantic-search
+services:
+  postgres:
+    image: postgres:16.13-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
+      POSTGRES_DB: ${POSTGRES_DB:-semantic}
+    command: ["postgres", "-c", "shared_buffers=128MB", "-c", "max_connections=20"]
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/schema.sql:/docker-entrypoint-initdb.d/001-products.sql:ro
+    mem_limit: 384m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.19.14
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "true"
+      xpack.security.http.ssl.enabled: "false"
+      xpack.ml.enabled: "false"
+      path.repo: /usr/share/elasticsearch/snapshots
+      ES_JAVA_OPTS: -Xms1536m -Xmx1536m
+      ELASTIC_PASSWORD: ${ELASTICSEARCH_PASSWORD:?required}
+    volumes:
+      - elastic_data:/usr/share/elasticsearch/data
+      - elastic_snapshots:/usr/share/elasticsearch/snapshots
+    mem_limit: 3g
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -u elastic:$$ELASTIC_PASSWORD http://localhost:9200/_cluster/health >/dev/null"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+    restart: unless-stopped
+
+  model-init:
+    build:
+      context: .
+      dockerfile: embedding-api/Dockerfile
+    command: ["python", "download_model.py"]
+    environment:
+      MODEL_DIR: /models/e5-small
+      HF_HUB_DISABLE_TELEMETRY: "1"
+    volumes:
+      - model_data:/models
+    mem_limit: 512m
+    restart: "no"
+
+  embedding:
+    build:
+      context: .
+      dockerfile: embedding-api/Dockerfile
+    environment:
+      MODEL_DIR: /models/e5-small
+      MODEL_FILE: ${MODEL_FILE:-onnx/model.onnx}
+      EMBEDDING_VERSION: ${EMBEDDING_VERSION:-e5-small-onnx-fp32-v1}
+      INFERENCE_THREADS: "2"
+      HF_HUB_DISABLE_TELEMETRY: "1"
+    volumes:
+      - model_data:/models
+    mem_limit: 1536m
+    cpus: 2
+    depends_on:
+      model-init: {condition: service_completed_successfully}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/ready')"]
+      interval: 15s
+      timeout: 5s
+      start_period: 90s
+      retries: 5
+    restart: unless-stopped
+
+  search-api:
+    build:
+      context: .
+      dockerfile: search-api/Dockerfile
+    environment:
+      APP_ENV: prod
+      APP_SECRET: ${APP_SECRET:?required}
+      DATABASE_DSN: pgsql:host=postgres;port=5432;dbname=${POSTGRES_DB:-semantic}
+      POSTGRES_USER: ${POSTGRES_USER:?required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
+      ADMIN_API_KEY: ${ADMIN_API_KEY:?required}
+      SEARCH_API_KEY: ${SEARCH_API_KEY:?required}
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD:?required}
+      ELASTICSEARCH_INDEX: ${ELASTICSEARCH_INDEX:-products_v1}
+      ELASTICSEARCH_ALIAS: ${ELASTICSEARCH_ALIAS:-products_current}
+      EMBEDDING_URL: http://embedding:8000
+      EMBEDDING_VERSION: ${EMBEDDING_VERSION:-e5-small-onnx-fp32-v1}
+    volumes:
+      - import_data:/data
+    expose: ["80"]
+    depends_on:
+      postgres: {condition: service_healthy}
+      elasticsearch: {condition: service_healthy}
+    mem_limit: 768m
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit(@file_get_contents('http://localhost/health/ready') === false ? 1 : 0);"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  elastic_data:
+  elastic_snapshots:
+  model_data:
+  import_data:

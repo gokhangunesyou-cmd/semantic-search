@@ -1,0 +1,12 @@
+# Local testing only. Do not add this override to the Coolify deployment.
+services:
+  search-api:
+    ports: ["127.0.0.1:18080:80"]
+    mem_limit: 384m
+  elasticsearch:
+    ports: ["127.0.0.1:19200:9200"]
+    environment:
+      ES_JAVA_OPTS: -Xms768m -Xmx768m
+    mem_limit: 1536m
+  embedding:
+    ports: ["127.0.0.1:18000:8000"]

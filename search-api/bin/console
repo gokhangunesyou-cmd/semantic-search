@@ -1,0 +1,8 @@
+#!/usr/bin/env php
+<?php
+// CLI and Apache share the www-data group inherited from the setgid var directory.
+umask(0002);
+require dirname(__DIR__).'/vendor/autoload.php';
+(new Symfony\Component\Dotenv\Dotenv())->bootEnv(dirname(__DIR__).'/.env');
+$application = new Symfony\Bundle\FrameworkBundle\Console\Application(new App\Kernel($_SERVER['APP_ENV'] ?? 'prod', false));
+$application->run();

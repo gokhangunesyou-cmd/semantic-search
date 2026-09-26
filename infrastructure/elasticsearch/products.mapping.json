@@ -1,0 +1,1036 @@
+{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0
+  },
+  "mappings": {
+    "properties": {
+      "artist": {
+        "type": "keyword",
+        "ignore_above": 2048
+      },
+      "checkPremium": {
+        "type": "boolean"
+      },
+      "variants": {
+        "type": "nested",
+        "dynamic": false,
+        "properties": {
+          "categoryFactor": {
+            "type": "double"
+          },
+          "explain": {
+            "type": "nested",
+            "dynamic": false,
+            "properties": {}
+          },
+          "comparePrice": {
+            "type": "double"
+          },
+          "offerCount": {
+            "type": "double"
+          },
+          "pkeywords": {
+            "type": "keyword",
+            "ignore_above": 2048
+          },
+          "vendorId": {
+            "type": "keyword"
+          },
+          "artistId": {
+            "type": "keyword"
+          },
+          "_score": {
+            "type": "double"
+          },
+          "merchantFeatured": {
+            "type": "keyword",
+            "ignore_above": 2048
+          },
+          "nameFactor": {
+            "type": "double"
+          },
+          "createdAt": {
+            "type": "date",
+            "format": "strict_date_optional_time||epoch_millis",
+            "ignore_malformed": true
+          },
+          "isBook": {
+            "type": "keyword",
+            "ignore_above": 2048
+          },
+          "flashSortScore": {
+            "type": "double"
+          },
+          "id": {
+            "type": "keyword"
+          },
+          "customerReviewCount": {
+            "type": "double"
+          },
+          "barcode": {
+            "type": "keyword"
+          },
+          "updatedAt": {
+            "type": "date",
+            "format": "strict_date_optional_time||epoch_millis",
+            "ignore_malformed": true
+          },
+          "categoryLikeAttributes": {
+            "type": "nested",
+            "dynamic": false,
+            "properties": {}
+          },
+          "images": {
+            "type": "nested",
+            "dynamic": false,
+            "properties": {
+              "isDefault": {
+                "type": "boolean"
+              },
+              "src": {
+                "type": "keyword",
+                "ignore_above": 2048
+              },
+              "product_id": {
+                "type": "keyword"
+              },
+              "width": {
+                "type": "double"
+              },
+              "position": {
+                "type": "double"
+              },
+              "height": {
+                "type": "double"
+              }
+            }
+          },
+          "brandName": {
+            "type": "keyword",
+            "ignore_above": 2048
+          },
+          "productId": {
+            "type": "keyword"
+          },
+          "productScore": {
+            "type": "double"
+          },
+          "vendorName": {
+            "type": "keyword",
+            "ignore_above": 2048
+          },
+          "isSalable": {
+            "type": "boolean"
+          },
+          "isFlash24": {
+            "type": "boolean"
+          },
+          "marginScore": {
+            "type": "double"
+          },
+          "categorySlug": {
+            "type": "keyword",
+            "ignore_above": 2048
+          },
+          "hasColorVariant": {
+            "type": "keyword",
+            "ignore_above": 2048
+          },
+          "highScoreAttributes": {
+            "type": "nested",
+            "dynamic": false,
+            "properties": {
+              "attributeNameId": {
+                "type": "keyword"
+              },
+              "attributeValueId": {
+                "type": "keyword"
+              },
+              "attributeValue": {
+                "type": "text",
+                "analyzer": "turkish",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 512
+                  }
+                }
+              },
+              "attributeName": {
+                "type": "text",
+                "analyzer": "turkish",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 512
+                  }
+                }
+              }
+            }
+          },
+          "nerField": {
+            "type": "keyword",
+            "ignore_above": 2048
+          },
+          "authorName": {
+            "type": "keyword",
+            "ignore_above": 2048
+          },
+          "brandId": {
+            "type": "keyword"
+          },
+          "name": {
+            "type": "text",
+            "analyzer": "turkish",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 512
+              }
+            }
+          },
+          "typeId": {
+            "type": "keyword"
+          },
+          "merchantReviewProperties": {
+            "type": "nested",
+            "dynamic": false,
+            "properties": {
+              "isVarianter": {
+                "type": "keyword",
+                "ignore_above": 2048
+              },
+              "valueId": {
+                "type": "keyword"
+              },
+              "valueText": {
+                "type": "text",
+                "analyzer": "turkish",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 512
+                  }
+                }
+              },
+              "visualTitle": {
+                "type": "keyword",
+                "ignore_above": 2048
+              },
+              "id": {
+                "type": "keyword"
+              },
+              "text": {
+                "type": "text",
+                "analyzer": "turkish",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 512
+                  }
+                }
+              },
+              "multipleSelection": {
+                "type": "keyword",
+                "ignore_above": 2048
+              }
+            }
+          },
+          "isSponsored": {
+            "type": "boolean"
+          },
+          "brandSlug": {
+            "type": "keyword",
+            "ignore_above": 2048
+          },
+          "customerReviewScore": {
+            "type": "double"
+          },
+          "formats": {
+            "type": "keyword",
+            "ignore_above": 2048
+          },
+          "isFlash72": {
+            "type": "boolean"
+          },
+          "plistFeatured": {
+            "type": "keyword",
+            "ignore_above": 2048
+          },
+          "typeName": {
+            "type": "keyword",
+            "ignore_above": 2048
+          },
+          "customerReviewRating": {
+            "type": "double"
+          },
+          "categoryName": {
+            "type": "keyword",
+            "ignore_above": 2048
+          },
+          "colors": {
+            "type": "keyword",
+            "ignore_above": 2048
+          },
+          "products": {
+            "type": "nested",
+            "dynamic": false,
+            "properties": {}
+          },
+          "listings": {
+            "type": "nested",
+            "dynamic": false,
+            "properties": {
+              "filterId": {
+                "type": "keyword"
+              },
+              "customSortType": {
+                "type": "keyword",
+                "ignore_above": 2048
+              },
+              "productPriceIds": {
+                "type": "keyword",
+                "ignore_above": 2048
+              },
+              "name": {
+                "type": "text",
+                "analyzer": "turkish",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 512
+                  }
+                }
+              },
+              "productListName": {
+                "type": "text",
+                "analyzer": "turkish",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 512
+                  }
+                }
+              },
+              "filterText": {
+                "type": "keyword",
+                "ignore_above": 2048
+              },
+              "productListId": {
+                "type": "keyword"
+              },
+              "productListSlug": {
+                "type": "keyword",
+                "ignore_above": 2048
+              },
+              "slug": {
+                "type": "keyword",
+                "ignore_above": 2048
+              },
+              "multipleSelection": {
+                "type": "keyword",
+                "ignore_above": 2048
+              }
+            }
+          },
+          "main_product_id": {
+            "type": "keyword"
+          },
+          "checkPremiumVariant": {
+            "type": "boolean"
+          },
+          "category360SpecVariant": {
+            "type": "keyword",
+            "ignore_above": 2048
+          },
+          "buyboxMerchantId": {
+            "type": "keyword"
+          },
+          "specificList": {
+            "type": "keyword",
+            "ignore_above": 2048
+          },
+          "productKeywords": {
+            "type": "keyword",
+            "ignore_above": 2048
+          },
+          "sponsoredProductCoef": {
+            "type": "double"
+          },
+          "categoryTree": {
+            "type": "keyword",
+            "ignore_above": 2048
+          },
+          "hasFormatVariant": {
+            "type": "keyword",
+            "ignore_above": 2048
+          },
+          "isMaxProductScore": {
+            "type": "boolean"
+          },
+          "sortConfig": {
+            "type": "nested",
+            "dynamic": false,
+            "properties": {
+              "sortOrder": {
+                "type": "double"
+              },
+              "sort": {
+                "type": "keyword",
+                "ignore_above": 2048
+              },
+              "hashId": {
+                "type": "keyword"
+              },
+              "hash": {
+                "type": "keyword",
+                "ignore_above": 2048
+              }
+            }
+          },
+          "isSlicer": {
+            "type": "keyword",
+            "ignore_above": 2048
+          },
+          "categoryBrandNames": {
+            "type": "nested",
+            "dynamic": false,
+            "properties": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 2048
+              }
+            }
+          },
+          "suggest": {
+            "type": "text",
+            "analyzer": "turkish",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 512
+              }
+            }
+          },
+          "nameBrandAuthor": {
+            "type": "keyword",
+            "ignore_above": 2048
+          },
+          "authorId": {
+            "type": "keyword"
+          },
+          "url": {
+            "type": "keyword",
+            "ignore_above": 2048
+          },
+          "brandFactor": {
+            "type": "double"
+          },
+          "variantCount": {
+            "type": "double"
+          },
+          "badges": {
+            "type": "nested",
+            "dynamic": false,
+            "properties": {
+              "backgroundColor": {
+                "type": "keyword",
+                "ignore_above": 2048
+              },
+              "displayType": {
+                "type": "keyword",
+                "ignore_above": 2048
+              },
+              "productPriceIds": {
+                "type": "keyword",
+                "ignore_above": 2048
+              },
+              "cdnUrl": {
+                "type": "keyword",
+                "ignore_above": 2048
+              },
+              "imageUrl": {
+                "type": "keyword",
+                "ignore_above": 2048
+              },
+              "displayTypeId": {
+                "type": "keyword"
+              },
+              "name": {
+                "type": "text",
+                "analyzer": "turkish",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 512
+                  }
+                }
+              },
+              "id": {
+                "type": "keyword"
+              },
+              "position": {
+                "type": "keyword",
+                "ignore_above": 2048
+              },
+              "sort": {
+                "type": "double"
+              },
+              "textColor": {
+                "type": "keyword",
+                "ignore_above": 2048
+              },
+              "isShow": {
+                "type": "boolean"
+              }
+            }
+          },
+          "timeStamp": {
+            "properties": {
+              "elasticUpdatedAt": {
+                "type": "date",
+                "format": "strict_date_optional_time||epoch_millis",
+                "ignore_malformed": true
+              },
+              "createdAt": {
+                "type": "date",
+                "format": "strict_date_optional_time||epoch_millis",
+                "ignore_malformed": true
+              },
+              "updatedAt": {
+                "type": "date",
+                "format": "strict_date_optional_time||epoch_millis",
+                "ignore_malformed": true
+              }
+            },
+            "dynamic": false
+          },
+          "isPublisher": {
+            "type": "boolean"
+          },
+          "seasonalityScoreFloat": {
+            "type": "double"
+          },
+          "isSlicerShow": {
+            "type": "boolean"
+          },
+          "handleUrl": {
+            "type": "keyword",
+            "ignore_above": 2048
+          },
+          "totalStock": {
+            "type": "double"
+          },
+          "attributes": {
+            "type": "nested",
+            "dynamic": false,
+            "properties": {
+              "sortByAttributeValue": {
+                "type": "double"
+              },
+              "valueId": {
+                "type": "keyword"
+              },
+              "valueText": {
+                "type": "text",
+                "analyzer": "turkish",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 512
+                  }
+                }
+              },
+              "attributeValue": {
+                "type": "text",
+                "analyzer": "turkish",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 512
+                  }
+                }
+              },
+              "sort": {
+                "type": "double"
+              },
+              "isVarianter": {
+                "type": "boolean"
+              },
+              "attributeId": {
+                "type": "keyword"
+              },
+              "sortingType": {
+                "type": "double"
+              },
+              "visualTitle": {
+                "type": "keyword",
+                "ignore_above": 2048
+              },
+              "attributeValueId": {
+                "type": "keyword"
+              },
+              "attributeName": {
+                "type": "text",
+                "analyzer": "turkish",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 512
+                  }
+                }
+              },
+              "id": {
+                "type": "keyword"
+              },
+              "text": {
+                "type": "text",
+                "analyzer": "turkish",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 512
+                  }
+                }
+              },
+              "multipleSelection": {
+                "type": "keyword",
+                "ignore_above": 2048
+              }
+            }
+          },
+          "artistName": {
+            "type": "keyword",
+            "ignore_above": 2048
+          },
+          "merchants": {
+            "type": "nested",
+            "dynamic": false,
+            "properties": {
+              "discountedSalesPrice": {
+                "type": "double"
+              },
+              "isPremiumPrice": {
+                "type": "boolean"
+              },
+              "dispatchType": {
+                "type": "keyword",
+                "ignore_above": 2048
+              },
+              "isFlash24ForMerchant": {
+                "type": "boolean"
+              },
+              "regions": {
+                "type": "nested",
+                "dynamic": false,
+                "properties": {
+                  "regionId": {
+                    "type": "keyword"
+                  }
+                }
+              },
+              "comparePrice": {
+                "type": "double"
+              },
+              "discount": {
+                "type": "double"
+              },
+              "searchableMerchantName": {
+                "type": "keyword",
+                "ignore_above": 2048
+              },
+              "merchantName": {
+                "type": "text",
+                "analyzer": "turkish",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 512
+                  }
+                }
+              },
+              "discountPercentage": {
+                "type": "double"
+              },
+              "promotionEndDate": {
+                "type": "date",
+                "format": "strict_date_optional_time||epoch_millis",
+                "ignore_malformed": true
+              },
+              "price": {
+                "type": "double"
+              },
+              "cargoStartingAt": {
+                "type": "keyword",
+                "ignore_above": 2048
+              },
+              "id": {
+                "type": "keyword"
+              },
+              "stock": {
+                "type": "double"
+              },
+              "isPDDMerchant": {
+                "type": "boolean"
+              },
+              "category360Spec": {
+                "type": "keyword",
+                "ignore_above": 2048
+              },
+              "premiumDiscountedSalesPrice": {
+                "type": "double"
+              },
+              "merchantListIds": {
+                "type": "keyword",
+                "ignore_above": 2048
+              },
+              "isFlash72ForMerchant": {
+                "type": "boolean"
+              },
+              "merchant": {
+                "type": "double"
+              },
+              "vendorRate": {
+                "type": "double"
+              },
+              "competitionType": {
+                "type": "keyword",
+                "ignore_above": 2048
+              },
+              "productPriceId": {
+                "type": "keyword"
+              },
+              "filterText": {
+                "type": "keyword",
+                "ignore_above": 2048
+              },
+              "thirtyDaysLowPercentage": {
+                "type": "double"
+              },
+              "cargoPrice": {
+                "type": "double"
+              },
+              "filterId": {
+                "type": "keyword"
+              },
+              "dispatchTime": {
+                "type": "double"
+              },
+              "buyBoxScore": {
+                "type": "double"
+              },
+              "merchantBadges": {
+                "type": "nested",
+                "dynamic": false,
+                "properties": {
+                  "valueText": {
+                    "type": "text",
+                    "analyzer": "turkish",
+                    "fields": {
+                      "keyword": {
+                        "type": "keyword",
+                        "ignore_above": 512
+                      }
+                    }
+                  },
+                  "valueId": {
+                    "type": "keyword"
+                  },
+                  "backgroundColor": {
+                    "type": "keyword",
+                    "ignore_above": 2048
+                  },
+                  "cdnUrl": {
+                    "type": "keyword",
+                    "ignore_above": 2048
+                  },
+                  "sort": {
+                    "type": "double"
+                  },
+                  "textColor": {
+                    "type": "keyword",
+                    "ignore_above": 2048
+                  },
+                  "isShow": {
+                    "type": "boolean"
+                  },
+                  "visualTitle": {
+                    "type": "keyword",
+                    "ignore_above": 2048
+                  },
+                  "displayType": {
+                    "type": "keyword",
+                    "ignore_above": 2048
+                  },
+                  "imageUrl": {
+                    "type": "keyword",
+                    "ignore_above": 2048
+                  },
+                  "displayTypeId": {
+                    "type": "keyword"
+                  },
+                  "name": {
+                    "type": "text",
+                    "analyzer": "turkish",
+                    "fields": {
+                      "keyword": {
+                        "type": "keyword",
+                        "ignore_above": 512
+                      }
+                    }
+                  },
+                  "id": {
+                    "type": "keyword"
+                  },
+                  "text": {
+                    "type": "text",
+                    "analyzer": "turkish",
+                    "fields": {
+                      "keyword": {
+                        "type": "keyword",
+                        "ignore_above": 512
+                      }
+                    }
+                  },
+                  "position": {
+                    "type": "keyword",
+                    "ignore_above": 2048
+                  },
+                  "multipleSelection": {
+                    "type": "keyword",
+                    "ignore_above": 2048
+                  }
+                }
+              },
+              "merchantBadgeIds": {
+                "type": "keyword",
+                "ignore_above": 2048
+              },
+              "thirtyDaysLowPrice": {
+                "type": "double"
+              },
+              "name": {
+                "type": "text",
+                "analyzer": "turkish",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 512
+                  }
+                }
+              },
+              "flashExpiredDate": {
+                "type": "date",
+                "format": "strict_date_optional_time||epoch_millis",
+                "ignore_malformed": true
+              },
+              "vendorPromotionEndDate": {
+                "type": "date",
+                "format": "strict_date_optional_time||epoch_millis",
+                "ignore_malformed": true
+              },
+              "multipleSelection": {
+                "type": "keyword",
+                "ignore_above": 2048
+              },
+              "promotionDiscountPercentage": {
+                "type": "double"
+              }
+            }
+          },
+          "properties": {
+            "type": "nested",
+            "dynamic": false,
+            "properties": {}
+          }
+        }
+      },
+      "factorMultiplier": {
+        "type": "double"
+      },
+      "generalSeasonalityScore": {
+        "type": "double"
+      },
+      "id": {
+        "type": "keyword"
+      },
+      "defaultAverageScore": {
+        "type": "double"
+      },
+      "isSalableCoefficient": {
+        "type": "double"
+      },
+      "isPDD": {
+        "type": "boolean"
+      },
+      "brand": {
+        "properties": {
+          "isPublisher": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "text",
+            "analyzer": "turkish",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 512
+              }
+            }
+          },
+          "id": {
+            "type": "keyword"
+          },
+          "slug": {
+            "type": "keyword",
+            "ignore_above": 2048
+          },
+          "brandFactor": {
+            "type": "double"
+          }
+        },
+        "dynamic": false
+      },
+      "isAdultProduct": {
+        "type": "boolean"
+      },
+      "productType": {
+        "properties": {
+          "name": {
+            "type": "text",
+            "analyzer": "turkish",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 512
+              }
+            }
+          },
+          "id": {
+            "type": "keyword"
+          }
+        },
+        "dynamic": false
+      },
+      "is_fullupdate": {
+        "type": "boolean"
+      },
+      "checkCategory360Spec": {
+        "type": "keyword",
+        "ignore_above": 2048
+      },
+      "isSalableFactor": {
+        "type": "double"
+      },
+      "checkIsFlash": {
+        "type": "boolean"
+      },
+      "author": {
+        "type": "keyword",
+        "ignore_above": 2048
+      },
+      "documentScore": {
+        "type": "double"
+      },
+      "checkIsFlash72": {
+        "type": "boolean"
+      },
+      "sponsoredDocCoef": {
+        "type": "keyword",
+        "ignore_above": 2048
+      },
+      "checkSponsored": {
+        "type": "boolean"
+      },
+      "checkIsFlash24": {
+        "type": "boolean"
+      },
+      "generalFlashSortScore": {
+        "type": "double"
+      },
+      "breadcrumb": {
+        "type": "nested",
+        "dynamic": false,
+        "properties": {
+          "name": {
+            "type": "text",
+            "analyzer": "turkish",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 512
+              }
+            }
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "slug": {
+            "type": "keyword",
+            "ignore_above": 2048
+          }
+        }
+      },
+      "maxNameFactor": {
+        "type": "double"
+      },
+      "category": {
+        "properties": {
+          "categoryFactor": {
+            "type": "double"
+          },
+          "isBook": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "text",
+            "analyzer": "turkish",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 512
+              }
+            }
+          },
+          "tree": {
+            "type": "nested",
+            "dynamic": false,
+            "properties": {
+              "name": {
+                "type": "text",
+                "analyzer": "turkish",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 512
+                  }
+                }
+              },
+              "id": {
+                "type": "keyword"
+              },
+              "slug": {
+                "type": "keyword",
+                "ignore_above": 2048
+              }
+            }
+          },
+          "id": {
+            "type": "keyword"
+          },
+          "slug": {
+            "type": "keyword",
+            "ignore_above": 2048
+          }
+        },
+        "dynamic": false
+      }
+    },
+    "dynamic": false,
+    "_meta": {
+      "origin": "sample-document; not an export of the original Elasticsearch mapping",
+      "unknown_fields": "dynamic:false keeps unknown fields in _source without indexing them"
+    }
+  }
+}
