@@ -11,7 +11,7 @@ from app.engine import Engine
 
 class EmbeddingRequest(BaseModel):
     kind: Literal['query', 'document']
-    texts: list[str] = Field(min_length=1, max_length=8)
+    texts: list[str] = Field(min_length=1, max_length=8, examples=[['tam yatan bebek arabası']])
 
     @field_validator('texts')
     @classmethod
@@ -19,6 +19,18 @@ class EmbeddingRequest(BaseModel):
         if any(not text.strip() or len(text) > 20000 for text in texts):
             raise ValueError('Each text must contain 1–20000 characters')
         return texts
+
+
+class EmbeddingItem(BaseModel):
+    embedding: list[float] = Field(min_length=384, max_length=384)
+    token_count: int
+    truncated: bool
+
+
+class EmbeddingResponse(BaseModel):
+    model_version: str
+    dimensions: Literal[384]
+    items: list[EmbeddingItem]
 
 
 def create_app(engine_factory=Engine):
@@ -29,19 +41,26 @@ def create_app(engine_factory=Engine):
         app.state.admitted = 0
         yield
 
-    app = FastAPI(lifespan=lifespan)
+    app = FastAPI(
+        lifespan=lifespan,
+        title='Embedding API',
+        version='1.0.0',
+        description='Türkçe ürün ve sorgu metinlerinden 384 boyutlu vektör üretir. API anahtarı gerekmez.',
+        swagger_ui_parameters={'tryItOutEnabled': True},
+    )
 
-    @app.get('/health/live')
+    @app.get('/health/live', tags=['Sağlık'])
     async def live():
         return {'status': 'ok'}
 
-    @app.get('/health/ready')
+    @app.get('/health/ready', tags=['Sağlık'])
     async def ready():
         if not getattr(app.state, 'engine', None):
             raise HTTPException(503, 'Model not ready')
         return {'status': 'ready', 'model_version': os.getenv('EMBEDDING_VERSION', 'e5-small-onnx-fp32-v1')}
 
-    @app.post('/v1/embeddings')
+    @app.post('/v1/embeddings', tags=['Embedding'], response_model=EmbeddingResponse,
+              responses={429: {'description': 'Embedding kapasitesi dolu; Retry-After ile yeniden deneyin.'}})
     async def embeddings(request: EmbeddingRequest):
         if app.state.admitted >= 4:
             raise HTTPException(429, 'Embedding capacity reached', headers={'Retry-After': '1'})

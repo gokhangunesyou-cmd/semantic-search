@@ -1,0 +1,1040 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Arama ve ürün API",
+    "version": "1.0.0",
+    "description": "PoC: API anahtarı gerekmez. Ürün değişiklikleri app:products:index komutundan sonra aramaya yansır."
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "paths": {
+    "/api/search": {
+      "post": {
+        "tags": [
+          "Arama"
+        ],
+        "operationId": "search",
+        "summary": "Semantik veya hibrit ürün arama",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              },
+              "example": {
+                "query": "tam yatan bebek arabası",
+                "mode": "semantic",
+                "limit": 10
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Başarılı",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Geçersiz istek",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Bağımlı servis kullanılamıyor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/documents/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "example": "470967"
+        }
+      ],
+      "put": {
+        "tags": [
+          "Ürünler"
+        ],
+        "operationId": "putDocument",
+        "summary": "Ürünü kaydet veya güncelle",
+        "description": "URL kimliği ürün id alanıyla eşleşmelidir. Gövde en fazla 2 MiB olabilir. semantic ayrılmış alandır. Aramaya yansıtmak için app:products:index çalıştırın.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/Product"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "_source": {
+                        "$ref": "#/components/schemas/Product"
+                      }
+                    },
+                    "required": [
+                      "_source"
+                    ]
+                  }
+                ]
+              },
+              "example": {
+                "artist": null,
+                "checkPremium": false,
+                "variants": [
+                  {
+                    "categoryFactor": 1,
+                    "explain": [],
+                    "comparePrice": null,
+                    "offerCount": 0,
+                    "pkeywords": null,
+                    "vendorId": null,
+                    "artistId": null,
+                    "_score": null,
+                    "merchantFeatured": [],
+                    "nameFactor": 1,
+                    "createdAt": "",
+                    "isBook": null,
+                    "flashSortScore": 1,
+                    "id": 470960,
+                    "customerReviewCount": 1,
+                    "barcode": "8681198292174",
+                    "updatedAt": null,
+                    "categoryLikeAttributes": [],
+                    "images": [
+                      {
+                        "isDefault": false,
+                        "src": "https://image01.idefix.com/resize/{size}product/470960/moonybaby-mb111-suit-tam-yatar-baston-bebek-arabasi-gri-66c79c9198760.jpg",
+                        "product_id": 470960,
+                        "width": 649,
+                        "position": 1,
+                        "height": 1023
+                      },
+                      {
+                        "isDefault": false,
+                        "src": "https://image01.idefix.com/resize/{size}product/470960/moonybaby-mb111-suit-tam-yatar-baston-bebek-arabasi-gri-66c79c913e565.jpg",
+                        "product_id": 470960,
+                        "width": 649,
+                        "position": 2,
+                        "height": 1023
+                      },
+                      {
+                        "isDefault": false,
+                        "src": "https://image01.idefix.com/resize/{size}product/470960/moonybaby-mb111-suit-tam-yatar-baston-bebek-arabasi-gri-66c79c90c6e6f.jpg",
+                        "product_id": 470960,
+                        "width": 1000,
+                        "position": 3,
+                        "height": 843
+                      },
+                      {
+                        "isDefault": false,
+                        "src": "https://image01.idefix.com/resize/{size}product/470960/moonybaby-mb111-suit-tam-yatar-baston-bebek-arabasi-gri-66c79c906cd77.jpg",
+                        "product_id": 470960,
+                        "width": 671,
+                        "position": 4,
+                        "height": 1024
+                      },
+                      {
+                        "isDefault": false,
+                        "src": "https://image01.idefix.com/resize/{size}product/470960/moonybaby-mb111-suit-tam-yatar-baston-bebek-arabasi-gri-66e9da670720a.jpg",
+                        "product_id": 470960,
+                        "width": 1000,
+                        "position": 5,
+                        "height": 692
+                      },
+                      {
+                        "isDefault": false,
+                        "src": "https://image01.idefix.com/resize/{size}product/470960/moonybaby-mb111-suit-tam-yatar-baston-bebek-arabasi-gri-66c79c8fa416a.jpg",
+                        "product_id": 470960,
+                        "width": 6720,
+                        "position": 6,
+                        "height": 4480
+                      },
+                      {
+                        "isDefault": false,
+                        "src": "https://image01.idefix.com/resize/{size}product/470960/moonybaby-mb111-suit-tam-yatar-baston-bebek-arabasi-gri-66e9da66ac78e.jpg",
+                        "product_id": 470960,
+                        "width": 749,
+                        "position": 7,
+                        "height": 1024
+                      }
+                    ],
+                    "brandName": null,
+                    "productId": null,
+                    "productScore": 29.949735753798613,
+                    "vendorName": null,
+                    "isSalable": true,
+                    "isFlash24": false,
+                    "marginScore": 0,
+                    "categorySlug": "",
+                    "hasColorVariant": null,
+                    "highScoreAttributes": [
+                      {
+                        "attributeNameId": 1,
+                        "attributeValueId": 100020,
+                        "attributeValue": "Gri",
+                        "attributeName": "Renk"
+                      }
+                    ],
+                    "nerField": null,
+                    "authorName": null,
+                    "brandId": null,
+                    "name": "Moonybaby Mb111 Suit Tam Yatar Baston Bebek Arabası Gri",
+                    "typeId": null,
+                    "merchantReviewProperties": [
+                      {
+                        "isVarianter": null,
+                        "valueId": 3,
+                        "valueText": "3 Yıldız ve Üzeri",
+                        "visualTitle": "",
+                        "id": 10000101,
+                        "text": "Satıcı Değerlendirme Puanı",
+                        "multipleSelection": "multiple"
+                      },
+                      {
+                        "isVarianter": null,
+                        "valueId": 2,
+                        "valueText": "2 Yıldız ve Üzeri",
+                        "visualTitle": "",
+                        "id": 10000101,
+                        "text": "Satıcı Değerlendirme Puanı",
+                        "multipleSelection": "multiple"
+                      },
+                      {
+                        "isVarianter": null,
+                        "valueId": 1,
+                        "valueText": "1 Yıldız ve Üzeri",
+                        "visualTitle": "",
+                        "id": 10000101,
+                        "text": "Satıcı Değerlendirme Puanı",
+                        "multipleSelection": "multiple"
+                      }
+                    ],
+                    "isSponsored": false,
+                    "brandSlug": "",
+                    "customerReviewScore": 0,
+                    "formats": [],
+                    "isFlash72": false,
+                    "plistFeatured": [],
+                    "typeName": null,
+                    "customerReviewRating": 4,
+                    "categoryName": null,
+                    "colors": [],
+                    "products": [],
+                    "listings": [
+                      {
+                        "filterId": 666666,
+                        "customSortType": null,
+                        "productPriceIds": [
+                          2534907
+                        ],
+                        "name": null,
+                        "productListName": "Turkuvaz Ailesi Özel Anne-Bebek Kategorisi İndirimi",
+                        "filterText": "Ürün Listeleri",
+                        "productListId": "3190",
+                        "productListSlug": "/turkuvaz-ailesi-ozel-anne-bebek-kategorisi-indirimi-l-3190",
+                        "slug": null,
+                        "multipleSelection": "multiple"
+                      },
+                      {
+                        "filterId": 666666,
+                        "customSortType": null,
+                        "productPriceIds": [
+                          2534907
+                        ],
+                        "name": null,
+                        "productListName": "Turkuvaz Ailesi Özel Kupon Fırsatı",
+                        "filterText": "Ürün Listeleri",
+                        "productListId": "67179",
+                        "productListSlug": "/turkuvaz-ailesi-ozel-kupon-firsati-l-67179",
+                        "slug": null,
+                        "multipleSelection": "multiple"
+                      },
+                      {
+                        "filterId": 666666,
+                        "customSortType": null,
+                        "productPriceIds": [
+                          2534907
+                        ],
+                        "name": null,
+                        "productListName": "Turkuvaz Ailesi Özel Kupon Fırsatı",
+                        "filterText": "Ürün Listeleri",
+                        "productListId": "69363",
+                        "productListSlug": "/turkuvaz-ailesi-ozel-kupon-firsati-l-69363",
+                        "slug": null,
+                        "multipleSelection": "multiple"
+                      },
+                      {
+                        "filterId": 666666,
+                        "customSortType": null,
+                        "productPriceIds": [
+                          2534907
+                        ],
+                        "name": null,
+                        "productListName": "Flaş Ürün",
+                        "filterText": "Ürün Listeleri",
+                        "productListId": "78348",
+                        "productListSlug": "/flas-urun-l-78348",
+                        "slug": null,
+                        "multipleSelection": "multiple"
+                      },
+                      {
+                        "filterId": 666666,
+                        "customSortType": null,
+                        "productPriceIds": [
+                          2534907
+                        ],
+                        "name": null,
+                        "productListName": "24 Saatte 1 Flash Ürünler",
+                        "filterText": "Ürün Listeleri",
+                        "productListId": "61254",
+                        "productListSlug": "/24-saatte-1-flash-urunler-l-61254",
+                        "slug": null,
+                        "multipleSelection": "multiple"
+                      }
+                    ],
+                    "main_product_id": null,
+                    "checkPremiumVariant": false,
+                    "category360SpecVariant": null,
+                    "buyboxMerchantId": 618,
+                    "specificList": [],
+                    "productKeywords": [],
+                    "sponsoredProductCoef": 1,
+                    "categoryTree": null,
+                    "hasFormatVariant": null,
+                    "isMaxProductScore": true,
+                    "sortConfig": [
+                      {
+                        "sortOrder": 224124,
+                        "sort": null,
+                        "hashId": 666666000060353,
+                        "hash": null
+                      }
+                    ],
+                    "isSlicer": null,
+                    "categoryBrandNames": [
+                      {
+                        "keyword": "Moonybaby Baston Puset"
+                      }
+                    ],
+                    "suggest": "Moonybaby Mb111 Suit Tam Yatar Baston Bebek Arabası Gri Baston Puset Moonybaby",
+                    "nameBrandAuthor": [],
+                    "authorId": null,
+                    "url": null,
+                    "brandFactor": 1,
+                    "variantCount": 0,
+                    "badges": [
+                      {
+                        "backgroundColor": "#FB2929",
+                        "displayType": "Yuvarlak Badge",
+                        "productPriceIds": [],
+                        "cdnUrl": "https://images.idefix.com/mpstatics/banner/test-6aac274ad7b08.svg",
+                        "imageUrl": "",
+                        "displayTypeId": 2,
+                        "name": "5000 TL Harcamaya 1000 TL idealpuan",
+                        "id": 3361,
+                        "position": "TOP3",
+                        "sort": 1,
+                        "textColor": "#FB2929",
+                        "isShow": true
+                      }
+                    ],
+                    "timeStamp": {
+                      "elasticUpdatedAt": "2026-09-26T21:05:34.120244",
+                      "createdAt": "2023-07-07T15:46:06.000000",
+                      "updatedAt": "2025-09-30T10:17:45.000000"
+                    },
+                    "isPublisher": false,
+                    "seasonalityScoreFloat": 1,
+                    "isSlicerShow": true,
+                    "handleUrl": "/moonybaby-mb111-suit-tam-yatar-baston-bebek-arabasi-gri-p-470960",
+                    "totalStock": 85,
+                    "attributes": [
+                      {
+                        "sortByAttributeValue": 0,
+                        "valueId": 100020,
+                        "valueText": "Gri",
+                        "attributeValue": null,
+                        "sort": 2,
+                        "isVarianter": true,
+                        "attributeId": null,
+                        "sortingType": 1,
+                        "visualTitle": "#808080",
+                        "attributeValueId": null,
+                        "attributeName": null,
+                        "id": 1,
+                        "text": "Renk",
+                        "multipleSelection": "multiple"
+                      },
+                      {
+                        "sortByAttributeValue": 3,
+                        "valueId": 100190,
+                        "valueText": "Unisex",
+                        "attributeValue": null,
+                        "sort": 190,
+                        "isVarianter": false,
+                        "attributeId": null,
+                        "sortingType": 1,
+                        "visualTitle": null,
+                        "attributeValueId": null,
+                        "attributeName": null,
+                        "id": 3,
+                        "text": "Cinsiyet",
+                        "multipleSelection": "multiple"
+                      },
+                      {
+                        "sortByAttributeValue": 13,
+                        "valueId": 1698893,
+                        "valueText": "18 kg",
+                        "attributeValue": null,
+                        "sort": 9999,
+                        "isVarianter": false,
+                        "attributeId": null,
+                        "sortingType": 1,
+                        "visualTitle": null,
+                        "attributeValueId": null,
+                        "attributeName": null,
+                        "id": 20,
+                        "text": "Taşıma Kapasitesi",
+                        "multipleSelection": "multiple"
+                      },
+                      {
+                        "sortByAttributeValue": 1261,
+                        "valueId": 1699611,
+                        "valueText": "8 kg",
+                        "attributeValue": null,
+                        "sort": 9999,
+                        "isVarianter": false,
+                        "attributeId": null,
+                        "sortingType": 3,
+                        "visualTitle": null,
+                        "attributeValueId": null,
+                        "attributeName": null,
+                        "id": 19,
+                        "text": "Ağırlık",
+                        "multipleSelection": "multiple"
+                      },
+                      {
+                        "sortByAttributeValue": 971,
+                        "valueId": 1788210,
+                        "valueText": "Tekstil",
+                        "attributeValue": null,
+                        "sort": 9999,
+                        "isVarianter": false,
+                        "attributeId": null,
+                        "sortingType": 3,
+                        "visualTitle": "Tekstil",
+                        "attributeValueId": null,
+                        "attributeName": null,
+                        "id": 3135,
+                        "text": "Materyal",
+                        "multipleSelection": "multiple"
+                      }
+                    ],
+                    "artistName": null,
+                    "merchants": [
+                      {
+                        "discountedSalesPrice": 3324.05,
+                        "isPremiumPrice": false,
+                        "dispatchType": "regular",
+                        "isFlash24ForMerchant": false,
+                        "regions": [
+                          {
+                            "regionId": 0
+                          }
+                        ],
+                        "comparePrice": 0,
+                        "discount": 0,
+                        "searchableMerchantName": null,
+                        "merchantName": "Koca Bebe",
+                        "discountPercentage": 0,
+                        "promotionEndDate": "2026-09-30T23:59:00.000000",
+                        "price": 3499,
+                        "cargoStartingAt": null,
+                        "id": null,
+                        "stock": 85,
+                        "isPDDMerchant": false,
+                        "category360Spec": null,
+                        "premiumDiscountedSalesPrice": 3324.05,
+                        "merchantListIds": [
+                          "3190",
+                          "67179",
+                          "69363",
+                          "78348",
+                          "61254"
+                        ],
+                        "isFlash72ForMerchant": false,
+                        "merchant": 618,
+                        "vendorRate": 3.6,
+                        "competitionType": null,
+                        "productPriceId": 2534907,
+                        "filterText": "Satıcılar",
+                        "thirtyDaysLowPercentage": 0,
+                        "cargoPrice": 0,
+                        "filterId": 555555,
+                        "dispatchTime": 3,
+                        "buyBoxScore": 100,
+                        "merchantBadges": [
+                          {
+                            "valueText": "Sepette indirim",
+                            "valueId": 3063,
+                            "backgroundColor": "#FB2929",
+                            "cdnUrl": null,
+                            "sort": 1,
+                            "textColor": "#FFFFFF",
+                            "isShow": false,
+                            "visualTitle": "",
+                            "displayType": "Standart Badge",
+                            "imageUrl": "",
+                            "displayTypeId": 1,
+                            "name": "Sepette indirim",
+                            "id": 66666666,
+                            "text": "Avantajlı Ürünler",
+                            "position": "TOP",
+                            "multipleSelection": "multiple"
+                          },
+                          {
+                            "valueText": "Kargo Bedava Ürünler",
+                            "valueId": 3070,
+                            "backgroundColor": "#FB2929",
+                            "cdnUrl": "https://images.idefix.com/mpstatics/badges/68422066e8c2f14d87eb0495e07d5638-683ece5652f6c.svg",
+                            "sort": 1,
+                            "textColor": "#FFFFFF",
+                            "isShow": false,
+                            "visualTitle": "",
+                            "displayType": "Yuvarlak Badge",
+                            "imageUrl": "",
+                            "displayTypeId": 2,
+                            "name": "Kargo Bedava Ürünler",
+                            "id": 66666666,
+                            "text": "Avantajlı Ürünler",
+                            "position": "TOP2",
+                            "multipleSelection": "multiple"
+                          },
+                          {
+                            "valueText": "5000 TL Harcamaya 1000 TL idealpuan",
+                            "valueId": 3361,
+                            "backgroundColor": "#FB2929",
+                            "cdnUrl": "https://images.idefix.com/mpstatics/banner/test-6aac274ad7b08.svg",
+                            "sort": 1,
+                            "textColor": "#FB2929",
+                            "isShow": true,
+                            "visualTitle": "",
+                            "displayType": "Yuvarlak Badge",
+                            "imageUrl": "",
+                            "displayTypeId": 2,
+                            "name": "5000 TL Harcamaya 1000 TL idealpuan",
+                            "id": 66666666,
+                            "text": "Avantajlı Ürünler",
+                            "position": "TOP3",
+                            "multipleSelection": "multiple"
+                          }
+                        ],
+                        "merchantBadgeIds": [
+                          3361,
+                          3063,
+                          3070
+                        ],
+                        "thirtyDaysLowPrice": null,
+                        "name": null,
+                        "flashExpiredDate": null,
+                        "vendorPromotionEndDate": null,
+                        "multipleSelection": "multiple",
+                        "promotionDiscountPercentage": 0
+                      }
+                    ],
+                    "properties": []
+                  }
+                ],
+                "factorMultiplier": 1,
+                "generalSeasonalityScore": 1,
+                "id": "470967",
+                "defaultAverageScore": 29.949735641479492,
+                "isSalableCoefficient": 0.5,
+                "isPDD": false,
+                "brand": {
+                  "isPublisher": false,
+                  "name": "Moonybaby",
+                  "id": 20048005,
+                  "slug": "/marka/moonybaby-20048005",
+                  "brandFactor": 1
+                },
+                "isAdultProduct": false,
+                "productType": {
+                  "name": "Fiziksel Ürün",
+                  "id": 1
+                },
+                "is_fullupdate": true,
+                "checkCategory360Spec": null,
+                "isSalableFactor": 1,
+                "checkIsFlash": false,
+                "author": null,
+                "documentScore": 29.949735641479492,
+                "checkIsFlash72": false,
+                "sponsoredDocCoef": null,
+                "checkSponsored": false,
+                "checkIsFlash24": false,
+                "generalFlashSortScore": 1,
+                "breadcrumb": [
+                  {
+                    "name": "Ana sayfa",
+                    "active": true,
+                    "slug": "/"
+                  },
+                  {
+                    "name": "Anne Bebek Çocuk",
+                    "active": true,
+                    "slug": "/anne-bebek-cocuk-c-11"
+                  },
+                  {
+                    "name": "Taşıma & Seyahat",
+                    "active": true,
+                    "slug": "/tasima-seyahat-c-1107"
+                  },
+                  {
+                    "name": "Bebek Arabaları",
+                    "active": true,
+                    "slug": "/bebek-arabalari-c-1107122920"
+                  },
+                  {
+                    "name": "Baston Puset",
+                    "active": true,
+                    "slug": "/baston-puset-c-110711948"
+                  }
+                ],
+                "maxNameFactor": 1,
+                "category": {
+                  "categoryFactor": 1,
+                  "isBook": false,
+                  "name": "Baston Puset",
+                  "tree": [
+                    {
+                      "name": "Anne Bebek Çocuk",
+                      "id": 11,
+                      "slug": "anne-bebek-cocuk-c-11"
+                    },
+                    {
+                      "name": "Taşıma & Seyahat",
+                      "id": 1107,
+                      "slug": "tasima-seyahat-c-1107"
+                    },
+                    {
+                      "name": "Bebek Arabaları",
+                      "id": 1107122920,
+                      "slug": "bebek-arabalari-c-1107122920"
+                    },
+                    {
+                      "name": "Baston Puset",
+                      "id": 110711948,
+                      "slug": "baston-puset-c-110711948"
+                    }
+                  ],
+                  "id": 110711948,
+                  "slug": "/baston-puset-c-110711948"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Başarılı",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "stored_in": {
+                      "type": "string"
+                    },
+                    "indexing": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Geçersiz istek",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Bağımlı servis kullanılamıyor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Ürünler"
+        ],
+        "operationId": "getDocument",
+        "summary": "PostgreSQL ürün kaydını getir",
+        "responses": {
+          "200": {
+            "description": "Başarılı",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "document": {
+                      "$ref": "#/components/schemas/Product"
+                    },
+                    "revision": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ürün bulunamadı",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Geçersiz istek",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Bağımlı servis kullanılamıyor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Ürünler"
+        ],
+        "operationId": "deleteDocument",
+        "summary": "Ürünü silinmiş olarak işaretle",
+        "description": "Arama indeksinden kaldırmak için app:products:index çalıştırın.",
+        "responses": {
+          "200": {
+            "description": "Başarılı",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "indexing": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Geçersiz istek",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Bağımlı servis kullanılamıyor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/live": {
+      "get": {
+        "tags": [
+          "Sağlık"
+        ],
+        "operationId": "live",
+        "summary": "Süreç kontrolü",
+        "responses": {
+          "200": {
+            "description": "Başarılı",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "tags": [
+          "Sağlık"
+        ],
+        "operationId": "ready",
+        "summary": "DB, Elasticsearch ve model kontrolü",
+        "responses": {
+          "200": {
+            "description": "Başarılı",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Servis hazır değil",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ]
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "integer"
+                    }
+                  ]
+                },
+                "name": {
+                  "type": "string"
+                },
+                "merchants": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          }
+        },
+        "required": [
+          "id",
+          "variants"
+        ],
+        "additionalProperties": true
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "SearchRequest": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Boş olamaz; UTF-8 olarak en fazla 2000 bayt."
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "semantic",
+              "hybrid"
+            ],
+            "default": "semantic"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "default": 10
+          },
+          "filters": {
+            "type": "object",
+            "properties": {
+              "brand_id": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ]
+              },
+              "category_ids": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 50,
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "integer"
+                    }
+                  ]
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "SearchResponse": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "score": {
+                  "type": "number"
+                },
+                "document": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

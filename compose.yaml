@@ -20,6 +20,8 @@ services:
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.19.14
+    ports:
+      - "${ELASTICSEARCH_BIND_IP:-192.168.1.105}:9200:9200"
     environment:
       discovery.type: single-node
       xpack.security.enabled: "true"
@@ -88,8 +90,6 @@ services:
       DATABASE_DSN: pgsql:host=postgres;port=5432;dbname=${POSTGRES_DB:-semantic}
       POSTGRES_USER: ${POSTGRES_USER:?required}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
-      ADMIN_API_KEY: ${ADMIN_API_KEY:?required}
-      SEARCH_API_KEY: ${SEARCH_API_KEY:?required}
       ELASTICSEARCH_URL: http://elasticsearch:9200
       ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD:?required}
       ELASTICSEARCH_INDEX: ${ELASTICSEARCH_INDEX:-products_v1}

@@ -42,3 +42,17 @@ Bu deneme istek zincirinin eşzamanlı çalıştığını kontrol eder. 2.000 ge
 - Orijinal üretim indeksinin gerçek `_mapping` çıktısıyla birebir eşitlik: çıktı paylaşılmadı. Mevcut mapping örneğe göre açık nested tanımlarla hazırlandı; gerçek export'u alan `--mapping` yolu birim testle doğrulandı.
 - Ev sunucusunda Coolify deploy, tünel erişimi, 2.000 gerçek ürün ve Türkçe relevance hedefleri.
 - FP32 / INT8 kalite ve hız karşılaştırması. Çalışan varsayılan FP32 ONNX'tir.
+
+## Anahtarsız API ve Swagger doğrulaması
+
+26 Eylül 2026 tarihinde yerel Docker ortamında güncel Search API ve embedding imajları yeniden oluşturuldu.
+
+- PHPUnit: 6 test, 56 assertion; embedding şemasındaki public URL ve proxy'nin 422/429 durum kodlarını, gövdeyi ve Retry-After başlığını koruması dahil.
+- Compose config, PHP syntax, Symfony DI container lint ve `git diff --check` başarılı.
+- API anahtarı göndermeyen `scripts/smoke_test.py` baştan sona başarılı: ürün PUT/GET/DELETE, semantik/hibrit arama, indeksleme ve hata sonrası toparlanma.
+- `/docs` tarayıcıda açıldı; arama örneği Swagger Execute üzerinden HTTP 200 ve bir ürün döndürdü.
+- Swagger seçiminden Embedding API şeması başarıyla açıldı; sunucu adresi `/api/embedding`.
+- İki OpenAPI JSON adresi ve embedding readiness proxy'si HTTP 200 döndürdü. Anahtarsız embedding POST proxy çağrısı gerçek modelle 384 boyutlu vektör döndürdü.
+- Swagger UI kurulumu resmi dağıtım biçimini kullanır: https://swagger.io/docs/open-source-tools/swagger-ui/usage/installation/ . Tarayıcı JavaScript/CSS dosyalarını CDN'den yükler.
+
+Bu bölümdeki sonuçlar yereldir; canlı Coolify deploy ve dış domain üzerinden erişim bu değişiklik kapsamında doğrulanmadı.

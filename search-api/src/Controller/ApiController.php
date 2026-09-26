@@ -9,11 +9,8 @@ final class ApiController
 {
     public function __construct(private Products $products, private Search $search, private Elastic $elastic, private Embeddings $embeddings, private \PDO $db) {}
 
-    private function run(Request $request, bool $admin, callable $action): JsonResponse
+    private function run(callable $action): JsonResponse
     {
-        $key = $request->headers->get('X-API-Key', '');
-        $expected = getenv($admin ? 'ADMIN_API_KEY' : 'SEARCH_API_KEY');
-        if (!$expected || !hash_equals($expected, $key)) return new JsonResponse(['error' => 'Yetkisiz erişim.'], 401);
         try { return $action(); }
         catch (\InvalidArgumentException | \JsonException $e) { return new JsonResponse(['error' => $e->getMessage()], 400); }
         catch (\Throwable $e) { error_log($e->getMessage()); return new JsonResponse(['error' => 'İşlem tamamlanamadı; servisleri kontrol edip tekrar deneyin.'], 503); }
@@ -30,7 +27,7 @@ final class ApiController
     #[Route('/api/documents/{id}', methods: ['PUT'])]
     public function put(string $id, Request $request): JsonResponse
     {
-        return $this->run($request, true, function () use ($request, $id) {
+        return $this->run(function () use ($request, $id) {
             $this->body($request);
             $this->products->saveJson($request->getContent(), $id);
             return new JsonResponse(['id' => $id, 'stored_in' => 'postgresql', 'indexing' => 'Run app:products:index'], 200);
@@ -40,19 +37,19 @@ final class ApiController
     #[Route('/api/documents/{id}', methods: ['GET'])]
     public function get(string $id, Request $request): JsonResponse
     {
-        return $this->run($request, true, fn() => ($row = $this->products->get($id)) ? new JsonResponse($row) : new JsonResponse(['error' => 'Bulunamadı.'], 404));
+        return $this->run(fn() => ($row = $this->products->get($id)) ? new JsonResponse($row) : new JsonResponse(['error' => 'Bulunamadı.'], 404));
     }
 
     #[Route('/api/documents/{id}', methods: ['DELETE'])]
     public function delete(string $id, Request $request): JsonResponse
     {
-        return $this->run($request, true, function () use ($id) { $this->products->delete($id); return new JsonResponse(['id' => $id, 'indexing' => 'Run app:products:index']); });
+        return $this->run(function () use ($id) { $this->products->delete($id); return new JsonResponse(['id' => $id, 'indexing' => 'Run app:products:index']); });
     }
 
     #[Route('/api/search', methods: ['POST'])]
     public function search(Request $request): JsonResponse
     {
-        return $this->run($request, false, fn() => new JsonResponse($this->search->find($this->body($request))));
+        return $this->run(fn() => new JsonResponse($this->search->find($this->body($request))));
     }
 
     #[Route('/health/ready', methods: ['GET'])]

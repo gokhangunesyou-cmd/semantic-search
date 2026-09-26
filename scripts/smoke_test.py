@@ -17,7 +17,7 @@ SAMPLE = json.loads((ROOT / 'search-api/tests/fixtures/product.json').read_text(
 ID = str(SAMPLE['id'])
 
 
-def request(method, path, body=None, admin=False, elastic=False, expected=200):
+def request(method, path, body=None, elastic=False, expected=200):
     headers = {'Content-Type': 'application/json'}
     if elastic:
         base = 'http://127.0.0.1:19200'
@@ -25,7 +25,6 @@ def request(method, path, body=None, admin=False, elastic=False, expected=200):
         headers['Authorization'] = 'Basic ' + token
     else:
         base = 'http://127.0.0.1:18080'
-        headers['X-API-Key'] = ENV['ADMIN_API_KEY' if admin else 'SEARCH_API_KEY']
     req = urllib.request.Request(base + path, data=json.dumps(body).encode() if body is not None else None, headers=headers, method=method)
     try:
         with urllib.request.urlopen(req, timeout=180) as response:
@@ -60,7 +59,7 @@ def main():
     else:
         command('app:elastic:init')
     command('app:products:import', 'tests/fixtures/product.json')
-    dbdoc = request('GET', f'/api/documents/{ID}', admin=True)['document']
+    dbdoc = request('GET', f'/api/documents/{ID}')['document']
     assert dbdoc == SAMPLE, 'DB must preserve every sample field and array'
     command('app:products:index')
     indexed = esdoc()
@@ -77,7 +76,7 @@ def main():
 
     changed = copy.deepcopy(SAMPLE)
     changed['variants'][0]['merchants'][0]['price'] = 1234.5
-    request('PUT', f'/api/documents/{ID}', changed, admin=True)
+    request('PUT', f'/api/documents/{ID}', changed)
     subprocess.run(COMPOSE + ['stop', 'embedding'], cwd=ROOT, check=True, capture_output=True)
     try:
         command('app:products:index')
@@ -86,7 +85,7 @@ def main():
         assert current['semantic']['hash'] == before['hash'] and current['semantic']['vector'] == before['vector']
         # Changed semantic text must fail safely while inference is unavailable.
         changed['variants'][0]['name'] += ' Kırmızı'
-        request('PUT', f'/api/documents/{ID}', changed, admin=True)
+        request('PUT', f'/api/documents/{ID}', changed)
         command('app:products:index', success=False)
         assert esdoc() == current, 'Failed inference must preserve the last indexed document'
         request('POST', '/api/search', {'query': 'bebek arabası'}, expected=503)
@@ -114,7 +113,7 @@ def main():
     extra['merchant'] = 777
     extra['price'] = 20
     nested['variants'][0]['merchants'].append(extra)
-    request('PUT', f'/api/documents/{ID}', nested, admin=True)
+    request('PUT', f'/api/documents/{ID}', nested)
     command('app:products:index')
     query = {'query': {'nested': {'path': 'variants', 'query': {'bool': {'must': [
         {'term': {'variants.id': '470960'}},
@@ -134,12 +133,12 @@ def main():
     # Mapping error must not advance the checkpoint or overwrite the last good document.
     bad = copy.deepcopy(nested)
     bad['variants'][0]['merchants'][0]['price'] = 'not-a-number'
-    request('PUT', f'/api/documents/{ID}', bad, admin=True)
+    request('PUT', f'/api/documents/{ID}', bad)
     command('app:products:index', success=False)
     assert esdoc()['variants'][0]['merchants'][0]['price'] != 'not-a-number'
-    request('PUT', f'/api/documents/{ID}', SAMPLE, admin=True)
+    request('PUT', f'/api/documents/{ID}', SAMPLE)
     command('app:products:index')
-    request('DELETE', f'/api/documents/{ID}', admin=True)
+    request('DELETE', f'/api/documents/{ID}')
     command('app:products:index')
     assert request('POST', '/api/search', {'query': 'bebek arabası'})['count'] == 0
     command('app:products:import', 'tests/fixtures/product.json')

@@ -3,8 +3,6 @@ import argparse
 import concurrent.futures
 import json
 import math
-import os
-import pathlib
 import time
 import urllib.request
 
@@ -15,14 +13,11 @@ parser.add_argument('--concurrency', type=int, default=3)
 args = parser.parse_args()
 if args.requests < 1 or not 1 <= args.concurrency <= 3:
     parser.error('requests >= 1 and concurrency 1–3 required')
-path = pathlib.Path(__file__).resolve().parents[1] / '.env'
-env = dict(line.split('=', 1) for line in path.read_text().splitlines() if line and not line.startswith('#')) if path.exists() else {}
-key = os.getenv('SEARCH_API_KEY') or env['SEARCH_API_KEY']
 
 
 def run(i):
     query = ['tam yatan bebek arabası', 'gri baston puset', 'Moonybaby MB111'][i % 3]
-    req = urllib.request.Request(args.url.rstrip('/') + '/api/search', data=json.dumps({'query': query, 'mode': 'semantic'}).encode(), headers={'Content-Type': 'application/json', 'X-API-Key': key})
+    req = urllib.request.Request(args.url.rstrip('/') + '/api/search', data=json.dumps({'query': query, 'mode': 'semantic'}).encode(), headers={'Content-Type': 'application/json'})
     started = time.perf_counter()
     with urllib.request.urlopen(req, timeout=180) as response:
         result = json.load(response)

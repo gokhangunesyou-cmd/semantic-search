@@ -41,11 +41,15 @@ Model dosyaları `model-init` tek seferlik servisi tarafından kalıcı volume'a
 
 ## Coolify kurulumu
 
+### Geliştirme ve deployment akışı
+
+Bu proje Coolify üzerinden çalıştırılır. Kod ve yapılandırma değişiklikleri repoda yapılır; kullanıcı Git push yapar ve ardından Coolify'da Deploy'a basar. Asistan değişiklikleri ve yerel doğrulamayı tamamlar. Sunucuda elle dosya düzenleme normal geliştirme akışının parçası değildir. Asistan için kalıcı çalışma kuralları `AGENTS.md` içindedir.
+
 1. Repoyu Coolify'da Docker Compose kaynağı olarak ekleyin; dosya `compose.yaml`.
 2. `.env.example` içindeki değişkenleri Coolify environment alanında gerçek ve farklı parolalarla tanımlayın. `.env` dosyasını Git'e göndermeyin.
 3. Ubuntu hostta Elasticsearch için `vm.max_map_count` değerini en az `262144` yapın ve `/etc/sysctl.d/` altında kalıcılaştırın.
 4. Deploy edin. `model-init` tamamlanıp model hazır olduğunda Python healthcheck başarılı olur. İlk model indirmesi zaman alabilir. Symfony, PostgreSQL/Elasticsearch/model hazır olduğunda başlar; kendi imajındaki SQL dosyasıyla tabloları oluşturup Apache'yi çalıştırır.
-5. Tüneli yalnızca `search-api` servisine, port `80` üzerinden bağlayın. Diğer servisler Docker iç ağındadır; host portu yayınlamaz.
+5. Tüneli yalnızca `search-api` servisine, port `80` üzerinden bağlayın. Elasticsearch ayrıca sunucunun yerel IP'sinde `9200` portunu yayınlar; PostgreSQL ve embedding host portu yayınlamaz.
 6. Search API terminalinde aşağıdaki komutları çalıştırın:
 
 ```bash
@@ -57,6 +61,20 @@ PostgreSQL kendi veritabanını hazırlar; uygulama tabloları `search-api` baş
 Eski deployment'ta `001-products.sql: Is a directory` hatası görüldüyse düzeltilmiş Compose dosyasını deploy edin. Mevcut PostgreSQL volume'unu koruyun: DB zaten oluşmuş olsa bile eksik uygulama tabloları Symfony başlangıcında tamamlanır. İlk kurulum başarısız olduktan sonra PostgreSQL'in `healthy` görünmesi tek başına ürün tablolarının oluştuğunu göstermez.
 
 Kaynak bütçeleri: Elasticsearch 3 GiB (1,5 GiB heap), embedding 1,5 GiB, Symfony 768 MiB, PostgreSQL 384 MiB. `model-init` 512 MiB limitlidir ve embedding başlamadan tamamlanır. Host işletim sistemi/Coolify için kalan alan ayrılır; gerçek tüketim sunucuda ölçülmelidir.
+
+### Elasticsearch'e yerel ağdan erişim
+
+`compose.yaml`, Elasticsearch portunu `${ELASTICSEARCH_BIND_IP:-192.168.1.105}:9200:9200` olarak yayınlar. Varsayılan IP, konuşmada verilen `192.168.1.105` kabul edilmiştir; sunucunun gerçek IP'si farklıysa `ELASTICSEARCH_BIND_IP` değiştirilmelidir. Değişiklikler Git push ve Coolify Deploy sonrasında uygulanır.
+
+Aynı ağdaki bilgisayardan `http://192.168.1.105:9200/` adresine erişilir. Kullanıcı adı `elastic`, parola Coolify'daki `ELASTICSEARCH_PASSWORD` değeridir. Terminalden parola istemiyle kontrol:
+
+```bash
+curl -u elastic http://192.168.1.105:9200/
+```
+
+HTTP 401, servise erişildiğini ancak kimlik doğrulamanın başarısız veya eksik olduğunu gösterir. Bağlantı reddi/zaman aşımında Coolify deployment durumu, port eşlemesi ve sunucunun güvenlik duvarı kontrol edilir. Mevcut HTTP yapılandırmasında trafik şifrelenmez; bu erişim güvenilen yerel ağ içindir.
+
+Yerel testte `compose.test.yaml`, `!override` ile bu eşlemeyi yalnızca `127.0.0.1:19200:9200` olarak değiştirir; yerel Docker Compose 2.24.4 veya üzeri gerekir.
 
 ## DB'ye ürün yükleme ve Elasticsearch'e aktarma
 
@@ -90,7 +108,19 @@ Revision DB tarafından artırılır. Aynı dokümanın tekrar yüklenmesi revis
 
 ## API
 
-Tüm ürün endpoint'leri `X-API-Key: ADMIN_API_KEY`, arama `X-API-Key: SEARCH_API_KEY` ister.
+PoC API'leri anahtarsız çalışır. `ADMIN_API_KEY` ve `SEARCH_API_KEY` artık kullanılmaz; Compose bu değişkenleri istemez.
+
+### Swagger ile deneme
+
+Coolify'da Search API için kullandığınız adresin **`/docs`** yolunu açın. Üstteki seçim alanından **Arama ve ürün API** veya **Embedding API** seçin; **Try it out → Execute** ile istek gönderin.
+
+- Yerel Swagger: `http://127.0.0.1:18080/docs`
+- Arama/ürün OpenAPI: `/openapi.json`
+- Embedding OpenAPI: `/api/embedding/openapi.json`
+- Embedding çağrıları aynı Search API adresinde `/api/embedding/v1/embeddings` üzerinden iç servise iletilir. Ek domain veya host portu gerekmez.
+- Embedding servisinin kendi Swagger'ı yerel testte `http://127.0.0.1:18000/docs`, şeması `/openapi.json` yolundadır.
+
+Arama örneği hazır gelir; ürün PUT işlemi mevcut örnek ürünle doldurulur. Ürün ekleme/güncelleme/silme sonrasında `app:products:index` çalıştırılmalıdır. Swagger'ın JavaScript/CSS dosyaları CDN'den yüklenir; tarayıcının internet erişimi gerekir.
 
 | Endpoint | Davranış |
 |---|---|
