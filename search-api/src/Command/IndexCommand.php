@@ -84,6 +84,11 @@ final class IndexCommand extends Command
                     if (!$row['deleted']) {
                         $row['semantic']['identifiers'] = $this->text->identifiers($row['doc']);
                         $original = json_decode($row['document'], false, 512, JSON_THROW_ON_ERROR);
+                        // Retain specificList in PostgreSQL, but omit it from the search
+                        // document: the existing keyword mapping cannot accept its objects.
+                        foreach ($original->variants as $variant) {
+                            unset($variant->specificList);
+                        }
                         $original->semantic = $row['semantic'];
                         $ndjson .= json_encode($original, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE)."\n";
                     }

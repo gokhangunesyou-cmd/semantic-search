@@ -10,6 +10,8 @@
 
 Elasticsearch `_source` alanında **orijinal ürün alanları aynı seviyede kalır**: `variants`, `brand`, `category`, `breadcrumb` vb. `payload` sarmalayıcısı yoktur. Yalnızca köke uygulamaya ayrılmış `semantic` nesnesi eklenir. Her ana dokümanda bir adet 384 boyutlu vektör vardır. Arama sonucu orijinal dokümanı, tüm varyant ve satıcılarıyla verir; `semantic` nesnesi yanıttan çıkarılır.
 
+İstisna: `variants.specificList`, mevcut `keyword` mapping'iyle uyumsuz nesneler içerdiği için Elasticsearch'e gönderilmez ve arama sonucunda bulunmaz. PostgreSQL'deki orijinal ürün ve ürün GET API yanıtı bu alanı korur. Bu düzeltme için yeni indeks gerekmez; deploy sonrasında `php bin/console app:products:index` tekrar çalıştırıldığında daha önce başarısız kayıtlar yeniden denenir.
+
 `infrastructure/elasticsearch/products.mapping.json` verilen örnek dokümana göre hazırlanmıştır. `variants`, `variants.merchants` ve örnekteki nesne dizileri açıkça `nested` tanımlanmıştır. `variants.attributes`, `variants.images`, `variants.listings`, `variants.merchants.regions`, `variants.merchants.merchantBadges`, `category.tree`, `breadcrumb` dahil tüm tanımları dosyada görebilirsiniz. ID listeleri gibi skaler diziler `keyword` alanlarıdır.
 
 **Orijinal indeksin gerçek `_mapping` çıktısı henüz verilmedi. Bu dosya orijinal mapping'in birebir kopyası değildir.** Null veya boş dizi içeren alanların gerçek Elasticsearch tipleri örnek dokümandan kesin çıkarılamaz. Bilinmeyen alanlar `dynamic: false` sayesinde `_source` içinde korunur; yeni alanlar açık mapping eklenmedikçe aranamaz. Var olan bir üretim indeksinin üzerine yazılmaz.
