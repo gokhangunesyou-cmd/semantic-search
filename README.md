@@ -80,17 +80,17 @@ Yerel testte `compose.test.yaml`, `!override` ile bu eşlemeyi yalnızca `127.0.
 
 ## DB'ye ürün yükleme ve Elasticsearch'e aktarma
 
-### Hazır 733 ürünü sunucuda DB'ye yükleme
+### Hazır 2.225 ürünü sunucuda DB'ye yükleme
 
-`infrastructure/datasets/products-score-gt140.ndjson` Git ile taşınan ürün dosyasıdır ve deploy sırasında uygulama imajına dahil edilir. Git push ve Coolify Deploy sonrasında **Search API servisinin terminalinde** çalıştırın:
+`infrastructure/datasets/products.ndjson` Git ile taşınan ürün dosyasıdır ve deploy sırasında uygulama imajına dahil edilir. Git push ve Coolify Deploy sonrasında **Search API servisinin terminalinde** çalıştırın:
 
 ```bash
 php bin/console app:products:import
 ```
 
-Komut bu dosyadaki 733 ürünü yalnızca PostgreSQL'e yazar; Elasticsearch'e bağlanmaz ve embedding üretmez. Aynı ID mevcutsa ürün güncellenir; aynı veriyle tekrar çalıştırmak kopya kayıt oluşturmaz veya revision artırmaz. Diğer ürünler silinmez. Sonuçta `DB: 733 başarılı, 0 hatalı.` görülmelidir.
+Komut bu dosyadaki 2.225 ürünü yalnızca PostgreSQL'e yazar; Elasticsearch'e bağlanmaz ve embedding üretmez. Aynı ID mevcutsa ürün güncellenir; aynı veriyle tekrar çalıştırmak kopya kayıt oluşturmaz veya revision artırmaz. Diğer ürünler silinmez. Sonuçta `DB: 2225 başarılı, 0 hatalı.` görülmelidir.
 
-Dosya `documentScore > 140` sorgusuyla yerelde çıkarılmıştır. 120 kaydın eksik `id` alanı kaynak Elasticsearch `_id` değeriyle tamamlanmıştır. Kaynak erişim şifresi ve dışa aktarma scripti yalnızca Git'in yok saydığı yerel `data/` klasöründedir; sunucuya gönderilmez. Veri dosyası imajda `/app/infrastructure/datasets/` altında bulunur; `/data` volume'undan etkilenmez.
+Dosya, önceki `documentScore > 140` sorgusundan gelen 733 ürün ile sekiz kategori sorgusundan (her sorgu en fazla 200 ürün) gelen 1.202 ürün ve `category.tree.id = 5507609420` nested sorgusundan gelen 300 ürünün ID bazında birleştirilmiş halidir. İlk kategori aktarımındaki 10 ortak üründe son çekilen veri kullanılır. Nested sorgudaki 300 ürünün tamamı yenidir; toplam 2.225 benzersiz ürün bulunur. Eksik `id` alanları kaynak Elasticsearch `_id` değeriyle tamamlanır. Kategori sorgularının sonuç sayıları sırasıyla 149, 200, 53, 200, 200, 0, 200, 200 olmuştur; `category.id = 5507609420` sorgusu ürün döndürmemiştir; aynı ID için `category.tree` üzerinde nested sorguyla ayrıca 300 ürün alınmıştır. Son sorgudaki `230244433` ve `231394552` kategorileri birlikte 200 ürünle sınırlanmıştır. Kaynak erişim şifresi ve dışa aktarma scripti yalnızca Git'in yok saydığı yerel `data/` klasöründedir; sunucuya gönderilmez. Veri dosyası imajda `/app/infrastructure/datasets/` altında bulunur; `/data` volume'undan etkilenmez.
 
 ### Başka bir dosyadan yükleme
 

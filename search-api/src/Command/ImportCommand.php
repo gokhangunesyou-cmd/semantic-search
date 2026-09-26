@@ -16,8 +16,8 @@ final class ImportCommand extends Command
         $this->addArgument(
             'file',
             InputArgument::OPTIONAL,
-            'JSON veya .ndjson dosyası; verilmezse repoyla gelen 733 ürün yüklenir.',
-            dirname(__DIR__, 3).'/infrastructure/datasets/products-score-gt140.ndjson',
+            'JSON veya .ndjson dosyası; verilmezse repoyla gelen ürünler yüklenir.',
+            dirname(__DIR__, 3).'/infrastructure/datasets/products.ndjson',
         );
     }
     protected function execute(InputInterface $input, OutputInterface $output): int
