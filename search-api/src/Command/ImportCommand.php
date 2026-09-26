@@ -11,7 +11,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class ImportCommand extends Command
 {
     public function __construct(private Products $products) { parent::__construct(); }
-    protected function configure(): void { $this->addArgument('file', InputArgument::REQUIRED, 'JSON veya .ndjson dosyası'); }
+    protected function configure(): void
+    {
+        $this->addArgument(
+            'file',
+            InputArgument::OPTIONAL,
+            'JSON veya .ndjson dosyası; verilmezse repoyla gelen 733 ürün yüklenir.',
+            dirname(__DIR__, 3).'/infrastructure/datasets/products-score-gt140.ndjson',
+        );
+    }
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $path = $input->getArgument('file');

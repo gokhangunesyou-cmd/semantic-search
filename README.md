@@ -78,6 +78,20 @@ Yerel testte `compose.test.yaml`, `!override` ile bu eşlemeyi yalnızca `127.0.
 
 ## DB'ye ürün yükleme ve Elasticsearch'e aktarma
 
+### Hazır 733 ürünü sunucuda DB'ye yükleme
+
+`infrastructure/datasets/products-score-gt140.ndjson` Git ile taşınan ürün dosyasıdır ve deploy sırasında uygulama imajına dahil edilir. Git push ve Coolify Deploy sonrasında **Search API servisinin terminalinde** çalıştırın:
+
+```bash
+php bin/console app:products:import
+```
+
+Komut bu dosyadaki 733 ürünü yalnızca PostgreSQL'e yazar; Elasticsearch'e bağlanmaz ve embedding üretmez. Aynı ID mevcutsa ürün güncellenir; aynı veriyle tekrar çalıştırmak kopya kayıt oluşturmaz veya revision artırmaz. Diğer ürünler silinmez. Sonuçta `DB: 733 başarılı, 0 hatalı.` görülmelidir.
+
+Dosya `documentScore > 140` sorgusuyla yerelde çıkarılmıştır. 120 kaydın eksik `id` alanı kaynak Elasticsearch `_id` değeriyle tamamlanmıştır. Kaynak erişim şifresi ve dışa aktarma scripti yalnızca Git'in yok saydığı yerel `data/` klasöründedir; sunucuya gönderilmez. Veri dosyası imajda `/app/infrastructure/datasets/` altında bulunur; `/data` volume'undan etkilenmez.
+
+### Başka bir dosyadan yükleme
+
 JSON dosyası tek `_source` dokümanı, tek Elasticsearch GET yanıtı veya bunların bir dizisi olabilir. Büyük aktarım için `.ndjson` kullanın: her satır bir doküman.
 
 ```bash
