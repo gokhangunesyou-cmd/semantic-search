@@ -44,16 +44,17 @@ Model dosyaları `model-init` tek seferlik servisi tarafından kalıcı volume'a
 1. Repoyu Coolify'da Docker Compose kaynağı olarak ekleyin; dosya `compose.yaml`.
 2. `.env.example` içindeki değişkenleri Coolify environment alanında gerçek ve farklı parolalarla tanımlayın. `.env` dosyasını Git'e göndermeyin.
 3. Ubuntu hostta Elasticsearch için `vm.max_map_count` değerini en az `262144` yapın ve `/etc/sysctl.d/` altında kalıcılaştırın.
-4. Deploy edin. `model-init` tamamlanıp model hazır olduğunda Python healthcheck başarılı olur. İlk model indirmesi zaman alabilir.
+4. Deploy edin. `model-init` tamamlanıp model hazır olduğunda Python healthcheck başarılı olur. İlk model indirmesi zaman alabilir. Symfony, PostgreSQL/Elasticsearch/model hazır olduğunda başlar; kendi imajındaki SQL dosyasıyla tabloları oluşturup Apache'yi çalıştırır.
 5. Tüneli yalnızca `search-api` servisine, port `80` üzerinden bağlayın. Diğer servisler Docker iç ağındadır; host portu yayınlamaz.
 6. Search API terminalinde aşağıdaki komutları çalıştırın:
 
 ```bash
-php bin/console app:db:init
 php bin/console app:elastic:init
 ```
 
-Veritabanı ilk boş volume başlangıcında da hazırlanır. `app:db:init` tekrar çalıştırılabilir. `app:elastic:init` mevcut indeksi silmez veya değiştirmez; indeks zaten varsa hata verir.
+PostgreSQL kendi veritabanını hazırlar; uygulama tabloları `search-api` başlangıcında `app:db:init` ile otomatik oluşturulur. SQL dosyası imajın içindedir; hosttan SQL dosyası bind mount edilmez ve repository-preservation ayarına ihtiyaç yoktur. `app:db:init` tekrar çalıştırılabilir; mevcut tabloları/verileri silmez. Bu komut ilerideki şema değişiklikleri için migration sistemi yerine geçmez. `app:elastic:init` mevcut indeksi silmez veya değiştirmez; indeks zaten varsa hata verir.
+
+Eski deployment'ta `001-products.sql: Is a directory` hatası görüldüyse düzeltilmiş Compose dosyasını deploy edin. Mevcut PostgreSQL volume'unu koruyun: DB zaten oluşmuş olsa bile eksik uygulama tabloları Symfony başlangıcında tamamlanır. İlk kurulum başarısız olduktan sonra PostgreSQL'in `healthy` görünmesi tek başına ürün tablolarının oluştuğunu göstermez.
 
 Kaynak bütçeleri: Elasticsearch 3 GiB (1,5 GiB heap), embedding 1,5 GiB, Symfony 768 MiB, PostgreSQL 384 MiB. `model-init` 512 MiB limitlidir ve embedding başlamadan tamamlanır. Host işletim sistemi/Coolify için kalan alan ayrılır; gerçek tüketim sunucuda ölçülmelidir.
 

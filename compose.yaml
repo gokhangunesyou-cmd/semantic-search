@@ -9,10 +9,10 @@ services:
     command: ["postgres", "-c", "shared_buffers=128MB", "-c", "max_connections=20"]
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./infrastructure/schema.sql:/docker-entrypoint-initdb.d/001-products.sql:ro
     mem_limit: 384m
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      start_period: 30s
       interval: 10s
       timeout: 5s
       retries: 10
@@ -80,6 +80,8 @@ services:
     build:
       context: .
       dockerfile: search-api/Dockerfile
+    # schema.sql is baked into this image; no host-side SQL bind mount is needed.
+    command: ["sh", "-c", "php bin/console app:db:init && exec apache2-foreground"]
     environment:
       APP_ENV: prod
       APP_SECRET: ${APP_SECRET:?required}
@@ -100,6 +102,7 @@ services:
     depends_on:
       postgres: {condition: service_healthy}
       elasticsearch: {condition: service_healthy}
+      embedding: {condition: service_healthy}
     mem_limit: 768m
     healthcheck:
       test: ["CMD", "php", "-r", "exit(@file_get_contents('http://localhost/health/ready') === false ? 1 : 0);"]
