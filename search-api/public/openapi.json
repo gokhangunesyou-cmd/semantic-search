@@ -926,6 +926,138 @@
           }
         }
       }
+    },
+    "/api/v2/search": {
+      "get": {
+        "tags": [
+          "Arama"
+        ],
+        "operationId": "searchV2",
+        "summary": "V2: ana vektör araması ve alan vektörleriyle sıralama",
+        "responses": {
+          "200": {
+            "description": "Başarılı",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SearchResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "version": {
+                          "type": "string",
+                          "enum": [
+                            "v2"
+                          ]
+                        },
+                        "weights": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "number"
+                            },
+                            "category": {
+                              "type": "number"
+                            },
+                            "brand": {
+                              "type": "number"
+                            },
+                            "semantic": {
+                              "type": "number",
+                              "example": 1.0
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Geçersiz istek",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Bağımlı servis kullanılamıyor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            },
+            "example": "tam yatan bebek arabası"
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "semantic"
+              ],
+              "default": "semantic"
+            },
+            "example": "semantic"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10
+            },
+            "example": 10
+          },
+          {
+            "name": "brand_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "20048005"
+          },
+          {
+            "name": "category_ids",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Virgülle ayrılmış kategori kimlikleri (en fazla 50)."
+            },
+            "example": "11,12"
+          }
+        ],
+        "description": "Tek script_score sorgusu: semantic.vector ana benzerlik skoru + 0.4 × ad + 0.5 × kategori + 0.1 × marka. Sabit aday sınırı ve kNN ön seçimi yoktur; limit yalnızca döndürülecek ürün sayısıdır. Filtreye uyan, ana vektörlü bütün ürünler puanlanır. Eksik boost alanlarının katkısı 0. Alan vektörleri app:products:index-v2 ile hazırlanır. Arama sırasında mapping veya sürüm kontrolü yapılmaz. Büyük kataloglarda yaklaşık kNN aramasından daha maliyetlidir."
+      }
     }
   },
   "components": {

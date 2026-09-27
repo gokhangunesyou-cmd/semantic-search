@@ -1,6 +1,7 @@
 <?php
 namespace App\Command;
 
+use App\Service\V2\Index\FieldVectors;
 use App\Service\{DocumentText, Elastic, Embeddings, SearchDocument};
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -41,6 +42,8 @@ final class IndexCommand extends Command
         if (($meta['embedding_version'] ?? '') !== $this->embeddings->version() || ($meta['text_version'] ?? '') !== DocumentText::VERSION) {
             throw new \RuntimeException('İndeks/model sürümü uyuşmuyor; yeni indeks oluşturun.');
         }
+        $v2Enabled = isset($info[$index]['mappings']['properties']['semantic']['properties']['v2']);
+        $fieldVectors = new FieldVectors($this->embeddings);
         $cursor = ''; $success = $failed = 0;
         while (true) {
             // Lock selected source rows until ES and checkpoint commits finish.
@@ -82,6 +85,7 @@ final class IndexCommand extends Command
                     $op = $row['deleted'] ? 'delete' : 'index';
                     $ndjson .= json_encode([$op => ['_index' => $index, '_id' => $row['id'], 'version' => (int) $row['revision'], 'version_type' => 'external_gte']], JSON_THROW_ON_ERROR)."\n";
                     if (!$row['deleted']) {
+                        if ($v2Enabled) $row['semantic']['v2'] = $fieldVectors->build($row['doc'], $row['semantic']['v2'] ?? null);
                         $row['semantic']['identifiers'] = $this->text->identifiers($row['doc']);
                         $original = SearchDocument::fromJson($row['document'], $row['semantic']);
                         $ndjson .= json_encode($original, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE)."\n";

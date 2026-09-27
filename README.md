@@ -208,3 +208,58 @@ docker compose run --rm --no-deps embedding sh -c 'pip install pytest==8.3.5 htt
 ```
 
 Yerel sonuçların kapsamı ve sınırları `docs/VERIFICATION.md` dosyasında kayıtlıdır.
+
+### V2: alan bazlı vektör araması
+
+`GET /api/v2/search?query=telefon&limit=2` ana vektörle ürün bulur; ad, kategori ve marka vektörleriyle sıralar. `brand_id`,
+`category_ids` ve `limit` parametreleri v1 ile aynıdır; yalnızca `mode=semantic` desteklenir. `/api/search` aynı
+davranışı sürdürür. Swagger `/docs` içinde v2 de yer alır.
+
+Coolify deploy sonrasında **search-api** servisinin terminalinde:
+
+```bash
+php bin/console app:products:index-v2 --batch-size=8
+```
+
+Komut `ELASTICSEARCH_INDEX` fiziksel indeksindeki **mevcut Elasticsearch dokümanlarını** tarar; PostgreSQL'den ürün
+kopyalamaz. Mapping'e `semantic.v2.name.vector`, `semantic.v2.category.vector`, `semantic.v2.brand.vector` (384 boyut)
+ekler. Kaynak ürün alanlarını, v1 vektörünü ve dış sürüm numarasını korur; alias değiştirmez. Arama aliasının bu indeksi
+gösteriyor olması gerekir. Kategori vektörü sıralı kategori yolu ve yaprak kategori adından üretilir. Analyzer alt
+alanları kullanılmaz. Eksik marka/kategori için vektör üretilmez. Vektör boyutu/modeli v1 ile aynıdır.
+
+Metin ve model sürümü hash'i sayesinde değişmeyen kayıtlar atlanır; kesilen/hatalı çalıştırma aynı komutla tekrar
+denenebilir. `--force` tüm v2 vektörlerini yeniden üretir. Komut toplu hatalarda başarısız çıkış kodu döndürür. Kaynak
+JSON nesne/dizi tipleri korunur. Normal `app:products:index` ile aynı PostgreSQL kilidini kullanır; v2 mapping'i
+eklendikten sonra normal indeksleyici de yeni/değişen ürünlerin v2 vektörlerini üretir. Harici Elasticsearch yazıcıları
+bu kilidi kullanmadığından bu komut sırasında durdurulmalıdır; doğrudan ES yazmaları bu uygulamanın desteklediği
+güncelleme akışı değildir.
+
+V2, tek Elasticsearch `script_score` sorgusunda `semantic.vector` benzerliğini ana skor olarak hesaplar;
+ad, kategori ve marka vektörleri bu skora boost ekler. Sabit aday havuzu, kNN ön seçimi veya ikinci sorgu yoktur.
+`limit` yalnızca döndürülen ürün sayısını belirler; puanlanan ürün sayısını sınırlamaz.
+
+Son puan: `1.0 × ana vektör + 0.4 × ad + 0.5 × kategori + 0.1 × marka`.
+Her benzerlik `(cosine + 1) / 2` ölçeğindedir. Ana vektörü olmayan kayıtlar dahil edilmez; eksik v2 alanının
+boost'u sıfırdır. `constant_score` kullanılmaz; ana vektörün benzerlik farkları korunur. Katsayılar
+`ProductVectorQuery::BASE_WEIGHT` ve `WEIGHTS` içindedir. Toplam skor 0–2 aralığındadır, olasılık değildir.
+Vektörler yanıtta gizlenir; `version` ve ana vektör dahil `weights` döner.
+
+Bu yöntem filtreye uyan ve ana vektörü bulunan bütün ürünlerde benzerlik hesaplar. V1'in yaklaşık kNN aramasına
+göre büyük kataloglarda daha fazla CPU ve süre gerektirir; `limit` düşürmek bu hesaplama yükünü azaltmaz.
+Elasticsearch `search.allow_expensive_queries` ayarının `script_score` sorgularına izin vermesi gerekir.
+
+V2 arama sırasında mapping/model sürümü kontrolü veya `_mapping` çağrısı yapılmaz. Mapping komut tarafından hazırlanır.
+`category.tree` repodaki mapping gibi nested olmalıdır. V2 alanları henüz eklenmemiş ürünler ana vektörleriyle
+puanlanır; eksik alanlar boost vermez. V1 bu süreçte çalışmaya devam eder. Canlı kalite ve performans ayrıca ölçülmelidir.
+
+V2 kodu ayrı namespace altında düzenlenmiştir:
+
+- `Controller/V2/SearchController`: HTTP isteği ve yanıtı.
+- `Service/V2/Search/ElasticSearchService`: embedding ve Elasticsearch çağrılarının koordinasyonu.
+- `Service/V2/Search/QueryBuilder/QueryBuilder`: fluent `applyFilter`, `vector`, `size`, `source`, `build`.
+- `QueryBuilder/Filter`: marka ve kategori filtreleri.
+- `QueryBuilder/ProductVectorQuery`: ana vektör skoru ve alan boost’larını içeren tek sorgu.
+- `Service/V2/Index/FieldVectors` ve `Command/V2/IndexCommand`: v2 vektör üretimi ve aktarımı.
+
+V1 controller/arama servisi v2'ye yönlendirme yapmaz. V2 builder her adımda kopya döndürür;
+ardışık istekler birbirinin filtrelerini değiştirmez.
