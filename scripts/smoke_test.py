@@ -8,6 +8,7 @@ import subprocess
 import time
 import urllib.error
 import urllib.request
+import urllib.parse
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 ENV = dict(line.split('=', 1) for line in (ROOT / '.env').read_text().splitlines() if line and not line.startswith('#'))
@@ -18,6 +19,9 @@ ID = str(SAMPLE['id'])
 
 
 def request(method, path, body=None, elastic=False, expected=200):
+    if method == 'GET' and body is not None:
+        path += '?' + urllib.parse.urlencode(body)
+        body = None
     headers = {'Content-Type': 'application/json'}
     if elastic:
         base = 'http://127.0.0.1:19200'
@@ -69,9 +73,9 @@ def main():
     before = esdoc()['semantic']
     assert '0 kayıt' in command('app:products:index'), 'Second run must skip unchanged rows'
     for mode in ['semantic', 'hybrid']:
-        results = request('POST', '/api/search', {'query': 'tam yatan bebek arabası', 'mode': mode, 'filters': {'brand_id': '20048005', 'category_ids': ['11']}})
+        results = request('GET', '/api/search', {'query': 'tam yatan bebek arabası', 'mode': mode, 'brand_id': '20048005', 'category_ids': '11'})
         assert len(results['items']) == 1 and results['items'][0]['document'] == SAMPLE
-    assert request('POST', '/api/search', {'query': 'bebek arabası', 'filters': {'brand_id': 'missing'}})['count'] == 0
+    assert request('GET', '/api/search', {'query': 'bebek arabası', 'brand_id': 'missing'})['count'] == 0
     print('PASS: DB round-trip, original ES _source, real embeddings, idempotency, filters, semantic/hybrid results')
 
     changed = copy.deepcopy(SAMPLE)
@@ -88,7 +92,7 @@ def main():
         request('PUT', f'/api/documents/{ID}', changed)
         command('app:products:index', success=False)
         assert esdoc() == current, 'Failed inference must preserve the last indexed document'
-        request('POST', '/api/search', {'query': 'bebek arabası'}, expected=503)
+        request('GET', '/api/search', {'query': 'bebek arabası'}, expected=503)
     finally:
         subprocess.run(COMPOSE + ['start', 'embedding'], cwd=ROOT, check=True, capture_output=True)
     for _ in range(60):
@@ -124,7 +128,7 @@ def main():
         {'term': {'variants.merchants.merchant': '618'}}, {'term': {'variants.merchants.price': 20}},
     ]}}
     assert request('POST', f'/{INDEX}/_search', query, elastic=True)['hits']['total']['value'] == 0
-    result = request('POST', '/api/search', {'query': 'bebek arabası'})
+    result = request('GET', '/api/search', {'query': 'bebek arabası'})
     assert result['count'] == 1 and len(result['items'][0]['document']['variants']) == 2
     assert result['items'][0]['document']['unknown_future_object'] == {}
     assert result['items'][0]['document']['unknown_future_list'] == []
@@ -140,7 +144,7 @@ def main():
     command('app:products:index')
     request('DELETE', f'/api/documents/{ID}')
     command('app:products:index')
-    assert request('POST', '/api/search', {'query': 'bebek arabası'})['count'] == 0
+    assert request('GET', '/api/search', {'query': 'bebek arabası'})['count'] == 0
     command('app:products:import', 'tests/fixtures/product.json')
     command('app:products:index')
     original = esdoc(); original.pop('semantic')

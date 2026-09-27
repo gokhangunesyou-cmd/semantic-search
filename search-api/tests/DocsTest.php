@@ -25,14 +25,14 @@ final class DocsTest extends TestCase
     {
         foreach ([422, 429] as $status) {
             $http = new MockHttpClient(function ($method, $url, $options) use ($status) {
-                self::assertSame('POST', $method);
-                self::assertStringEndsWith('/v1/embeddings', $url);
-                self::assertSame('{"kind":"query","texts":[]}', $options['body']);
+                self::assertSame('GET', $method);
+                self::assertStringEndsWith('/v1/embeddings?kind=query&texts=ilk&texts=ikinci', $url);
+                self::assertEmpty($options['body'] ?? '');
                 return new MockResponse('{"detail":"rejected"}', [
                     'http_code' => $status, 'response_headers' => ['Retry-After: 1'],
                 ]);
             });
-            $request = Request::create('/api/embedding/v1/embeddings', 'POST', content: '{"kind":"query","texts":[]}');
+            $request = Request::create('/api/embedding/v1/embeddings?kind=query&texts=ilk&texts=ikinci', 'GET');
             $result = (new DocsController())->embedding($request, $http);
             self::assertSame($status, $result->getStatusCode());
             self::assertSame('1', $result->headers->get('Retry-After'));

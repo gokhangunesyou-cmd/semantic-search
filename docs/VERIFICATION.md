@@ -56,3 +56,10 @@ Bu deneme istek zincirinin eşzamanlı çalıştığını kontrol eder. 2.000 ge
 - Swagger UI kurulumu resmi dağıtım biçimini kullanır: https://swagger.io/docs/open-source-tools/swagger-ui/usage/installation/ . Tarayıcı JavaScript/CSS dosyalarını CDN'den yükler.
 
 Bu bölümdeki sonuçlar yereldir; canlı Coolify deploy ve dış domain üzerinden erişim bu değişiklik kapsamında doğrulanmadı.
+
+## GET endpoint değişikliği — 27 Eylül 2026
+
+- Dış arama ve embedding proxy yolları GET kullanır; Swagger ve README URL parametrelerini gösterir. İç embedding POST yolu uzun doküman batch'leri için korunmuştur.
+- Yerel PHPUnit: 9 test, 85 assertion başarılı. GET aramasında limit dönüşümü, marka/kategori filtreleri, geçersiz parametreler ve proxy üzerinden tekrarlanan `texts` parametrelerinin korunması kontrol edildi. Bağımlı HTTP servisleri mock kullanır.
+- Mevcut embedding Docker imajında güncel kaynaklar salt okunur bağlanarak Python testleri çalıştırıldı: 3 başarılı; gerçek model testi seçilmedi. GET parametre doğrulaması, çoklu metin, OpenAPI GET sözleşmesi ve dahili POST desteği kontrol edildi.
+- Canlı sunucuda veya yeniden deploy edilmiş uçtan uca ortamda doğrulama yapılmadı.

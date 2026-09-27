@@ -143,27 +143,23 @@ Arama örneği hazır gelir; ürün PUT işlemi mevcut örnek ürünle doldurulu
 | `PUT /api/documents/{id}` | İstek gövdesindeki orijinal dokümanı PostgreSQL'e yazar |
 | `GET /api/documents/{id}` | DB'deki güncel dokümanı ve revision'ı döndürür |
 | `DELETE /api/documents/{id}` | DB'de silinmiş olarak işaretler; index komutu ES'den siler |
-| `POST /api/search` | Elasticsearch'teki son indekslenmiş dokümanları döndürür |
+| `GET /api/search` | Elasticsearch'teki son indekslenmiş dokümanları döndürür |
 | `GET /health/live` | PHP süreci |
 | `GET /health/ready` | DB şeması, Elasticsearch durumu ve model readiness/sürümü |
 
 PUT gövdesi doğrudan ürün JSON'udur; `document` veya `payload` içine sarılmaz. URL'deki kimlikle doküman `id` değeri eşleşmelidir. Ürün alanında `semantic` kullanılamaz.
 
-Arama örneği:
+Tarayıcı adres çubuğundan açılabilecek örnekler (kendi Search API adresinize ekleyin):
 
-```json
-{
-  "query": "tam yatan bebek arabası",
-  "mode": "semantic",
-  "limit": 10,
-  "filters": {
-    "brand_id": "20048005",
-    "category_ids": ["11"]
-  }
-}
+```text
+/api/search?query=bebek%20arabası&mode=semantic&limit=10
+/api/search?query=bebek%20arabası&brand_id=20048005&category_ids=11,12
+/api/embedding/v1/embeddings?kind=query&texts=bebek%20arabası
 ```
 
-`filters` opsiyoneldir. Marka ve kategori AND, kategori listesi OR mantığıyla uygulanır. Kategori ağacı nested ise uygun nested query kullanılır. Filtre kNN aday seçimine uygulanır. Varsayılan mod `semantic`; `hybrid` modda BM25 ve vektör aramasının ilk 50 adayı uygulamada RRF (`k=60`) ile birleştirilir. Doküman kimliği ve barkodlar kesin eşleşmeye eklenir; ürün model kodları ürün metninde aranır. Limit 1–50; derin sayfalama yoktur. Skor olasılık değildir.
+Arama parametreleri URL query string üzerinden gönderilir. `brand_id` ve virgülle ayrılmış `category_ids` opsiyoneldir. Embedding için `kind=query|document` ve `texts` gerekir; birden fazla metin için `texts=ilk&texts=ikinci` kullanılır (1–8 metin). Dışarıya açılan arama ve embedding yolları yalnızca GET kabul eder. Uzun dokümanların toplu indekslenmesi için iç embedding servisi POST desteğini korur; bu dahili işlem Swagger'da gösterilmez.
+
+Marka ve kategori AND, kategori listesi OR mantığıyla uygulanır. Kategori ağacı nested ise uygun nested query kullanılır. Filtre kNN aday seçimine uygulanır. Varsayılan mod `semantic`; `hybrid` modda BM25 ve vektör aramasının ilk 50 adayı uygulamada RRF (`k=60`) ile birleştirilir. Doküman kimliği ve barkodlar kesin eşleşmeye eklenir; ürün model kodları ürün metninde aranır. Limit 1–50; derin sayfalama yoktur. Skor olasılık değildir.
 
 Yanıt: `mode`, `count`, `items: [{id, score, document}]`. `document`, **orijinal ürünün tüm alanlarını** içerir. Hangi varyantın eşleştiği hesaplanmaz. Stok/fiyat/renk kombinasyon filtreleri bu sürümün API kapsamına dahil değildir; nested mapping ileride bunları doğru kurmak için korunur.
 

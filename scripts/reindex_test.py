@@ -18,7 +18,7 @@ try:
     assert '1 kayıt' in target_command('app:products:index', '--activate')
     alias = request('GET', '/_alias/products_current', elastic=True)
     assert list(alias) == [temporary]
-    result = request('POST', '/api/search', {'query': 'bebek arabası'})
+    result = request('GET', '/api/search', {'query': 'bebek arabası'})
     assert result['items'][0]['id'] == ID and result['items'][0]['document'] == SAMPLE
     assert '0 kayıt' in target_command('app:products:index')
 finally:

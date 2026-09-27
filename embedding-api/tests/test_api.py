@@ -30,6 +30,22 @@ def test_contract_and_input_limits():
             assert client.post('/v1/embeddings', json=payload).status_code == 422
 
 
+def test_browser_get_contract_and_validation():
+    with TestClient(create_app(FakeEngine)) as client:
+        response = client.get('/v1/embeddings', params=[('kind', 'query'), ('texts', 'Türkçe ürün & test'), ('texts', 'ikinci')])
+        assert response.status_code == 200
+        assert len(response.json()['items']) == 2
+        for params in [
+            {}, {'kind': 'wrong', 'texts': 'x'}, {'kind': 'query'},
+            {'kind': 'query', 'texts': ' '}, {'kind': 'query', 'texts': ['x'] * 9},
+            {'kind': 'query', 'texts': 'x' * 20001},
+        ]:
+            assert client.get('/v1/embeddings', params=params).status_code == 422
+        operation = client.get('/openapi.json').json()['paths']['/v1/embeddings']
+        assert 'get' in operation and 'post' not in operation
+        assert 'requestBody' not in operation['get']
+
+
 def test_real_model_prefix_truncation_and_norm():
     import os
     import pytest

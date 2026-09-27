@@ -46,10 +46,25 @@ final class ApiController
         return $this->run(function () use ($id) { $this->products->delete($id); return new JsonResponse(['id' => $id, 'indexing' => 'Run app:products:index']); });
     }
 
-    #[Route('/api/search', methods: ['POST'])]
+    #[Route('/api/search', methods: ['GET'])]
     public function search(Request $request): JsonResponse
     {
-        return $this->run(fn() => new JsonResponse($this->search->find($this->body($request))));
+        return $this->run(function () use ($request) {
+            $input = $request->query->all();
+            if (isset($input['limit'])) {
+                $limit = filter_var($input['limit'], FILTER_VALIDATE_INT);
+                if ($limit === false) throw new \InvalidArgumentException('limit tam sayı olmalı (1–50).');
+                $input['limit'] = $limit;
+            }
+            $filters = [];
+            if (isset($input['brand_id'])) $filters['brand_id'] = $input['brand_id'];
+            if (isset($input['category_ids'])) {
+                $categories = $input['category_ids'];
+                $filters['category_ids'] = is_string($categories) ? explode(',', $categories) : $categories;
+            }
+            $input['filters'] = $filters;
+            return new JsonResponse($this->search->find($input));
+        });
     }
 
     #[Route('/health/ready', methods: ['GET'])]

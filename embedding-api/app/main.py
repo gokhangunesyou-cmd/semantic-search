@@ -1,9 +1,9 @@
 import asyncio
 import os
 from contextlib import asynccontextmanager
-from typing import Literal
+from typing import Annotated, Literal
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field, field_validator
 
 from app.engine import Engine
@@ -59,7 +59,13 @@ def create_app(engine_factory=Engine):
             raise HTTPException(503, 'Model not ready')
         return {'status': 'ready', 'model_version': os.getenv('EMBEDDING_VERSION', 'e5-small-onnx-fp32-v1')}
 
-    @app.post('/v1/embeddings', tags=['Embedding'], response_model=EmbeddingResponse,
+    @app.get('/v1/embeddings', tags=['Embedding'], response_model=EmbeddingResponse,
+             responses={429: {'description': 'Embedding kapasitesi dolu; Retry-After ile yeniden deneyin.'}})
+    async def embeddings_get(request: Annotated[EmbeddingRequest, Query()]):
+        return await embeddings(request)
+
+    # Internal batch indexing uses a body to avoid URL length limits.
+    @app.post('/v1/embeddings', include_in_schema=False, response_model=EmbeddingResponse,
               responses={429: {'description': 'Embedding kapasitesi dolu; Retry-After ile yeniden deneyin.'}})
     async def embeddings(request: EmbeddingRequest):
         if app.state.admitted >= 4:

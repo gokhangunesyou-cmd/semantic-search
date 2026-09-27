@@ -5,6 +5,7 @@ import json
 import math
 import time
 import urllib.request
+import urllib.parse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--url', default='http://127.0.0.1:18080')
@@ -17,7 +18,7 @@ if args.requests < 1 or not 1 <= args.concurrency <= 3:
 
 def run(i):
     query = ['tam yatan bebek arabası', 'gri baston puset', 'Moonybaby MB111'][i % 3]
-    req = urllib.request.Request(args.url.rstrip('/') + '/api/search', data=json.dumps({'query': query, 'mode': 'semantic'}).encode(), headers={'Content-Type': 'application/json'})
+    req = urllib.request.Request(args.url.rstrip('/') + '/api/search?' + urllib.parse.urlencode({'query': query, 'mode': 'semantic'}))
     started = time.perf_counter()
     with urllib.request.urlopen(req, timeout=180) as response:
         result = json.load(response)

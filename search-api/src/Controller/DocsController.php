@@ -56,7 +56,7 @@ HTML);
     }
 
     #[Route('/api/embedding/health/{check}', requirements: ['check' => 'live|ready'], methods: ['GET'])]
-    #[Route('/api/embedding/v1/embeddings', methods: ['POST'])]
+    #[Route('/api/embedding/v1/embeddings', methods: ['GET'])]
     public function embedding(Request $request, HttpClientInterface $http): Response
     {
         if (strlen($request->getContent()) > 2 * 1024 * 1024) {
@@ -64,9 +64,7 @@ HTML);
         }
         try {
             $path = substr($request->getPathInfo(), strlen('/api/embedding'));
-            $upstream = $http->request($request->getMethod(), $this->embeddingUrl().$path, [
-                'body' => $request->getContent(),
-                'headers' => ['Content-Type' => 'application/json'],
+            $upstream = $http->request($request->getMethod(), $this->embeddingUrl().$path.($request->server->get('QUERY_STRING', '') !== '' ? '?'.$request->server->get('QUERY_STRING') : ''), [
                 'timeout' => 120, 'max_duration' => 180,
             ]);
             $headers = ['Content-Type' => 'application/json'];
