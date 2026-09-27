@@ -83,7 +83,22 @@ function productCard(item, index) {
     const dataButton = element('button', '', 'Ürün verisi');
     dataButton.type = 'button';
     dataButton.addEventListener('click', () => showData(`Ürün ${item.id} · API verisi`, item));
-    body.append(score, dataButton);
+    const vectorTexts = element('details', 'vector-texts');
+    vectorTexts.append(element('summary', '', 'Vektör metinleri'));
+    const texts = [
+        ['Ana metin', doc.semantic?.text],
+        ['Ürün adı', doc.semantic?.v2?.name?.text],
+        ['Kategori', doc.semantic?.v2?.category?.text],
+        ['Marka', doc.semantic?.v2?.brand?.text]
+    ];
+    let hasText = false;
+    for (const [label, text] of texts) {
+        if (typeof text !== 'string' || !text.trim()) continue;
+        hasText = true;
+        vectorTexts.append(element('strong', '', label), element('p', 'vector-text', text));
+    }
+    if (!hasText) vectorTexts.append(element('p', '', 'Vektör metni mevcut değil.'));
+    body.append(score, dataButton, vectorTexts);
     card.append(picture, body);
     return card;
 }

@@ -29,7 +29,7 @@ final class SearchV2Test extends TestCase
             }
             self::assertArrayNotHasKey('knn', $body);
             self::assertSame(2, $body['size']);
-            self::assertSame(['excludes' => ['semantic']], $body['_source']);
+            self::assertTrue($body['_source']);
             $scoring = $body['query']['script_score'];
             $filters = $scoring['query']['bool']['filter'];
             self::assertCount(3, $filters);
@@ -47,7 +47,10 @@ final class SearchV2Test extends TestCase
             }
             return new MockResponse(json_encode(['hits' => ['hits' => [[
                 '_id' => 'phone', '_score' => 0.9,
-                '_source' => ['id' => 'phone', 'empty' => new \stdClass(), 'list' => []]
+                '_source' => ['id' => 'phone', 'empty' => new \stdClass(), 'list' => [],
+                    'semantic' => ['text' => 'Telefon', 'vector' => [1, 0], 'v2' => [
+                        'name' => ['text' => 'Telefon adı', 'vector' => [0, 1]]
+                    ]]]
             ]]]]));
         }, 'http://localhost');
         $controller = $this->controller($http);
@@ -58,6 +61,10 @@ final class SearchV2Test extends TestCase
         self::assertSame('v2', $body->version);
         self::assertSame('phone', $body->items[0]->id);
         self::assertInstanceOf(\stdClass::class, $body->items[0]->document->empty);
+        self::assertSame('Telefon', $body->items[0]->document->semantic->text);
+        self::assertSame([1, 0], $body->items[0]->document->semantic->vector);
+        self::assertSame('Telefon adı', $body->items[0]->document->semantic->v2->name->text);
+        self::assertSame([0, 1], $body->items[0]->document->semantic->v2->name->vector);
         self::assertSame(2, $http->getRequestsCount());
     }
 

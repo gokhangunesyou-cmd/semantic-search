@@ -16,7 +16,7 @@ final class QueryBuilderV2Test extends TestCase
         $first = $filtered->size(2)->source(false)->build();
         $second = $filtered->size(5)->build();
         self::assertFalse($first['_source']);
-        self::assertSame(['excludes' => ['semantic']], $second['_source']);
+        self::assertTrue($second['_source']);
         self::assertSame(2, $first['size']);
         self::assertSame(5, $second['size']);
         self::assertCount(2, $second['query']['script_score']['query']['bool']['filter']);

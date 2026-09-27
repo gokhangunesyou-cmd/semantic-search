@@ -10,7 +10,7 @@ final class QueryBuilder
     private array $filters = [];
     private array $vector = [];
     private int $size = 10;
-    private array|bool $source = ['excludes' => ['semantic']];
+    private array|bool $source = true;
 
     public function __construct(private ProductVectorQuery $vectorQuery)
     {

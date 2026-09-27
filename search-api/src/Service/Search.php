@@ -40,7 +40,7 @@ final class Search
         }
         $vector = $this->embeddings->encode('query', [$query])[0]['embedding'];
         $size = $mode === 'hybrid' ? 50 : $limit;
-        $base = ['size' => $size, '_source' => ['excludes' => ['semantic']]];
+        $base = ['size' => $size, '_source' => true];
         $knn = ['field' => 'semantic.vector', 'query_vector' => $vector, 'k' => $size, 'num_candidates' => 100];
         if ($filter) $knn['filter'] = ['bool' => ['filter' => $filter]];
         $semantic = $this->elastic->request('POST', $index.'/_search', $base + ['knn' => $knn])['hits']['hits'];

@@ -168,6 +168,19 @@ input {
     font-family: monospace;
 }
 
+.vector-texts {
+    margin-top: 12px;
+}
+
+.vector-texts summary {
+    margin-bottom: 8px;
+    cursor: pointer;
+}
+
+.vector-text {
+    white-space: pre-wrap;
+}
+
 dialog {
     width: min(900px, calc(100% - 32px));
     max-height: 85vh;

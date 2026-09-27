@@ -14,12 +14,16 @@ Arama metni, türü ve sonuç sayısı URL'de `?query=bebek+arabası&mode=semant
 URL'deki `query` değiştirilerek veya bağlantı paylaşılarak aynı arama açılabilir; geri/ileri gezinme de desteklenir.
 Her satırdaki **Ürün verisi** butonu ilgili API sonuç nesnesini, **Tüm API yanıtı** butonu mevcut aramanın
 bütün yanıtını JSON olarak açar. Veriler API'nin döndürdüğü tüm alanları içerir; ayrı istek yapılmaz.
+Her üründeki **Vektör metinleri** bölümü ana metni ve varsa V2 ad, kategori, marka metinlerini gösterir.
+Sayısal vektörler **Ürün verisi** ve **Tüm API yanıtı** içinde görülebilir.
 
 ## Ürün yapısı ve mapping
 
 Ürün `products.document` JSONB kolonunda bütün haliyle saklanır. PostgreSQL'de JSONB tercihinin amacı; varyant, satıcı, özellik, kampanya ve diğer alanları kaybetmeden orijinal dokümanı kaynak veri olarak tutmaktır. Varyantlar ayrı ürün kayıtlarına dönüştürülmez.
 
-Elasticsearch `_source` alanında **orijinal ürün alanları aynı seviyede kalır**: `variants`, `brand`, `category`, `breadcrumb` vb. `payload` sarmalayıcısı yoktur. Yalnızca köke uygulamaya ayrılmış `semantic` nesnesi eklenir. Her ana dokümanda bir adet 384 boyutlu vektör vardır. Arama sonucu orijinal dokümanı, tüm varyant ve satıcılarıyla verir; `semantic` nesnesi yanıttan çıkarılır.
+Elasticsearch `_source` alanında **orijinal ürün alanları aynı seviyede kalır**: `variants`, `brand`, `category`, `breadcrumb` vb. `payload` sarmalayıcısı yoktur. Yalnızca köke uygulamaya ayrılmış `semantic` nesnesi eklenir. Her ana dokümanda bir adet 384 boyutlu vektör vardır. Arama sonucu orijinal dokümanı, tüm varyant ve satıcılarıyla verir; `/api/search` ve `/api/v2/search` yanıtlarında `items[].document.semantic` nesnesi de döner.
+Bu nesne ana `text` ve `vector` alanlarını, varsa `v2` altındaki ad/kategori/marka metin ve vektörlerini içerir.
+İndekste mevcut veriler doğrudan döner; bu yanıt değişikliği için yeniden indeksleme gerekmez.
 
 İstisna: `author`, `variants.specificList`, `variants.productKeywords`, `variants.plistFeatured` ve `variants.merchantFeatured` mevcut `keyword` mapping’iyle uyumsuz nesneler içerebildiği için Elasticsearch’e gönderilmez ve yeni indekslenen ürünlerin arama sonucunda bulunmaz. PostgreSQL’deki orijinal ürün ve ürün GET API yanıtı bu alanları korur. Bu düzeltme için yeni indeks gerekmez; deploy sonrasında `php bin/console app:products:index` tekrar çalıştırıldığında daha önce başarısız kayıtlar yeniden denenir. Daha önce başarılı indekslenmiş kayıtlar değişmez.
 

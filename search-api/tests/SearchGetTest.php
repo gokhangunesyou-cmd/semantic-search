@@ -38,6 +38,39 @@ final class SearchGetTest extends TestCase
         self::assertSame(3, $http->getRequestsCount());
     }
 
+    public function testSemanticDataIsReturnedInBothModes(): void
+    {
+        $semantic = ['text' => 'Telefon', 'vector' => [1, 0], 'v2' => [
+            'name' => ['text' => 'Telefon adı', 'vector' => [0, 1]]
+        ]];
+        foreach (['semantic', 'hybrid'] as $mode) {
+            $http = new MockHttpClient(function ($method, $url, $options) use ($semantic) {
+                if (str_ends_with($url, '/_mapping')) {
+                    return new MockResponse(json_encode(['products' => ['mappings' => ['_meta' => [
+                        'embedding_version' => (new Embeddings(new MockHttpClient()))->version(),
+                        'text_version' => DocumentText::VERSION
+                    ]]]]));
+                }
+                if (str_ends_with($url, '/v1/embeddings')) {
+                    return new MockResponse(json_encode([
+                        'model_version' => (new Embeddings(new MockHttpClient()))->version(),
+                        'dimensions' => 384, 'items' => [['embedding' => [1, ...array_fill(0, 383, 0)]]]
+                    ]));
+                }
+                $body = json_decode($options['body'], true);
+                self::assertTrue($body['_source']);
+                return new MockResponse(json_encode(['hits' => ['hits' => [[
+                    '_id' => 'phone', '_score' => 0.9, '_source' => ['id' => 'phone', 'semantic' => $semantic]
+                ]]]]));
+            }, 'http://localhost');
+            $response = $this->controller($http)->search(Request::create('/api/search?query=telefon&mode=' . $mode));
+            self::assertSame(200, $response->getStatusCode());
+            $body = json_decode($response->getContent(), true);
+            self::assertSame($semantic, $body['items'][0]['document']['semantic']);
+            self::assertSame($mode === 'hybrid' ? 4 : 3, $http->getRequestsCount());
+        }
+    }
+
     public function testInvalidBrowserInputReturns400WithoutCallingServices(): void
     {
         $http = new MockHttpClient();

@@ -1145,7 +1145,82 @@
                   "type": "number"
                 },
                 "document": {
-                  "$ref": "#/components/schemas/Product"
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Product"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "semantic": {
+                          "type": "object",
+                          "description": "İndeksteki vektör verileri; ana metin/vektör ve varsa V2 alan vektörleri.",
+                          "properties": {
+                            "text": {
+                              "type": "string"
+                            },
+                            "vector": {
+                              "type": "array",
+                              "items": {
+                                "type": "number"
+                              }
+                            },
+                            "v2": {
+                              "type": "object",
+                              "properties": {
+                                "name": {
+                                  "type": "object",
+                                  "properties": {
+                                    "text": {
+                                      "type": "string"
+                                    },
+                                    "vector": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "number"
+                                      }
+                                    }
+                                  },
+                                  "additionalProperties": true
+                                },
+                                "category": {
+                                  "type": "object",
+                                  "properties": {
+                                    "text": {
+                                      "type": "string"
+                                    },
+                                    "vector": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "number"
+                                      }
+                                    }
+                                  },
+                                  "additionalProperties": true
+                                },
+                                "brand": {
+                                  "type": "object",
+                                  "properties": {
+                                    "text": {
+                                      "type": "string"
+                                    },
+                                    "vector": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "number"
+                                      }
+                                    }
+                                  },
+                                  "additionalProperties": true
+                                }
+                              }
+                            }
+                          },
+                          "additionalProperties": true
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
