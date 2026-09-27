@@ -6,9 +6,14 @@
 
 ## Ürün listeleme arayüzü
 
-Search API alan adının kök adresi (`/`) tek sayfalık ürün arama ekranıdır. Arama metnini girip **Ürün ara** düğmesine basın; semantik veya hibrit modda 12, 24 ya da 50 sonuç isteyebilirsiniz. Kartlar API sırasını korur ve her ürünün `items[].score` değerini yuvarlamadan gösterir. Score yüzde değildir; semantik skor ile hibrit RRF skoru farklı ölçeklerde olduğundan doğrudan karşılaştırılmamalıdır.
+Search API alan adının kök adresi (`/`) tek sayfalık ürün arama ekranıdır. Arama metnini girip **Ara** düğmesine basın; semantik veya hibrit modda 12, 24 ya da 50 sonuç isteyebilirsiniz. Ürün listesi API sırasını korur ve her ürünün `items[].score` değerini yuvarlamadan gösterir. Score yüzde değildir; semantik skor ile hibrit RRF skoru farklı ölçeklerde olduğundan doğrudan karşılaştırılmamalıdır.
 
-Kartlar ana ürün ID’sine uyan varyantı, bulunamazsa ilk varyantı gösterir. Görsel, ürün adı, marka, kategori ve seçilen varyantın buybox satıcısının (yoksa ilk satıcının) fiyatı kullanılır. Eksik görsel/fiyat için açıklama gösterilir. Görseller ürün verisindeki HTTP(S) adreslerinden yüklenir. Arama `GET /api/search` üzerinden aynı origin üzerinde yapılır; ayrı frontend servisi veya build adımı gerekmez. Değişiklikler normal Git push → Coolify Deploy akışıyla yayınlanır.
+Satırlar ana ürün ID’sine uyan varyantı, bulunamazsa ilk varyantı gösterir. Görsel, ürün adı, marka, kategori ve seçilen varyantın buybox satıcısının (yoksa ilk satıcının) fiyatı kullanılır. Eksik görsel/fiyat için açıklama gösterilir. Görseller ürün verisindeki HTTP(S) adreslerinden yüklenir. Arama `GET /api/search` üzerinden aynı origin üzerinde yapılır; ayrı frontend servisi veya build adımı gerekmez. Değişiklikler normal Git push → Coolify Deploy akışıyla yayınlanır.
+
+Arama metni, türü ve sonuç sayısı URL'de `?query=bebek+arabası&mode=semantic&limit=12` biçiminde tutulur.
+URL'deki `query` değiştirilerek veya bağlantı paylaşılarak aynı arama açılabilir; geri/ileri gezinme de desteklenir.
+Her satırdaki **Ürün verisi** butonu ilgili API sonuç nesnesini, **Tüm API yanıtı** butonu mevcut aramanın
+bütün yanıtını JSON olarak açar. Veriler API'nin döndürdüğü tüm alanları içerir; ayrı istek yapılmaz.
 
 ## Ürün yapısı ve mapping
 
