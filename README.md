@@ -4,6 +4,12 @@
 
 **Kaynak PostgreSQL'dir. Ürünler DB'ye yazılır; yalnızca `app:products:index` komutu DB'den okuyarak Elasticsearch'e aktarır. Kuyruk veya arka plan tüketicisi yoktur.** API ile yazılan/güncellenen/silinen kayıtlar bu komut çalıştırılıncaya kadar arama indeksine yansımaz.
 
+## Ürün listeleme arayüzü
+
+Search API alan adının kök adresi (`/`) tek sayfalık ürün arama ekranıdır. Arama metnini girip **Ürün ara** düğmesine basın; semantik veya hibrit modda 12, 24 ya da 50 sonuç isteyebilirsiniz. Kartlar API sırasını korur ve her ürünün `items[].score` değerini yuvarlamadan gösterir. Score yüzde değildir; semantik skor ile hibrit RRF skoru farklı ölçeklerde olduğundan doğrudan karşılaştırılmamalıdır.
+
+Kartlar ana ürün ID’sine uyan varyantı, bulunamazsa ilk varyantı gösterir. Görsel, ürün adı, marka, kategori ve seçilen varyantın buybox satıcısının (yoksa ilk satıcının) fiyatı kullanılır. Eksik görsel/fiyat için açıklama gösterilir. Görseller ürün verisindeki HTTP(S) adreslerinden yüklenir. Arama `GET /api/search` üzerinden aynı origin üzerinde yapılır; ayrı frontend servisi veya build adımı gerekmez. Değişiklikler normal Git push → Coolify Deploy akışıyla yayınlanır.
+
 ## Ürün yapısı ve mapping
 
 Ürün `products.document` JSONB kolonunda bütün haliyle saklanır. PostgreSQL'de JSONB tercihinin amacı; varyant, satıcı, özellik, kampanya ve diğer alanları kaybetmeden orijinal dokümanı kaynak veri olarak tutmaktır. Varyantlar ayrı ürün kayıtlarına dönüştürülmez.

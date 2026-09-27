@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ürün keşfi · Semantik arama</title>
+  <link rel="stylesheet" href="/assets/catalog.css">
+  <script src="/assets/catalog.js" defer></script>
+</head>
+<body>
+  <header class="topbar"><a class="logo" href="/" aria-label="Ürün keşfi ana sayfa"><span class="logo-icon">u.</span> ürün keşfi</a><a class="docs" href="/docs">API dokümanı ↗</a></header>
+  <main>
+    <section class="intro" aria-labelledby="page-title">
+      <p class="eyebrow">SEMANTİK ÜRÜN ARAMA</p>
+      <h1 id="page-title">Aradığını tarif et.<br><span>İlgili ürünleri keşfet.</span></h1>
+      <p class="lead">Bir ürün adı, bir ihtiyaç ya da aklındaki birkaç kelimeyle başla.</p>
+      <form id="search-form">
+        <label class="sr-only" for="query">Ürün ara</label>
+        <div class="searchbox"><span aria-hidden="true" class="search-icon">⌕</span><input id="query" name="query" type="search" placeholder="Örneğin: hafif ve katlanabilir bebek arabası" required maxlength="2000" autocomplete="off"><button type="submit" id="search-button">Ürün ara <span aria-hidden="true">↗</span></button></div>
+        <div class="options"><label for="mode">Arama türü <select id="mode" name="mode"><option value="semantic">Semantik</option><option value="hybrid">Hibrit</option></select></label><label for="limit">Ürün sayısı <select id="limit" name="limit"><option value="12">12</option><option value="24">24</option><option value="50">50</option></select></label></div>
+      </form>
+    </section>
+    <section class="results" aria-labelledby="results-title" aria-busy="false">
+      <div class="results-heading"><h2 id="results-title">Arama sonuçları</h2><span id="result-meta"></span></div>
+      <p id="score-note" class="score-note">Score, aramanın ürettiği ham sıralama puanıdır; yüzde değildir. Semantik ve hibrit skorlar doğrudan karşılaştırılamaz.</p>
+      <div id="status" class="status" role="status" aria-live="polite"><span class="state-icon" aria-hidden="true">⌕</span><h3>Keşif bir aramayla başlar</h3><p>Aramanı yaz; ürünleri ve eşleşme skorlarını burada gör.</p></div>
+      <div id="products" class="product-grid"></div>
+    </section>
+  </main>
+  <footer>Ürün keşfi <span>Semantik arama deneyimi</span></footer>
+</body>
+</html>

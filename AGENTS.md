@@ -7,3 +7,6 @@
 - Mevcut bağlamdan belli olan çalışma akışı için tekrar onay isteme. Gerçekten eksik bilgi gerekiyorsa yalnızca o bilgiyi sor.
 - Elasticsearch yerel ağ erişimi Compose port eşlemesiyle yönetilir. Varsayılan sunucu iç IP'si `192.168.1.105` kabul edilmiştir; gerçek IP farklıysa `ELASTICSEARCH_BIND_IP` ile değiştirilebilir.
 - Canlı sunucuda doğrulanmayan sonuçları yerelde doğrulanmış gibi raporlama.
+- Aksi belirtilmedikçe yalnızca doğrudan sorulan soruya odaklan, kısa, net ve sade yanıt ver.
+- Aksi belirtilmedikçe kurulum ve operasyonel süreçlerde tüm adımları tek seferde verme; en fazla 1-2 adım verip kullanıcının tamamlamasını bekle.
+- Aksi belirtilmedikçe teorik arka plan veya gereksiz dolgu açıklamaları üretme.
