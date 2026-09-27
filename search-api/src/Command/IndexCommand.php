@@ -1,7 +1,7 @@
 <?php
 namespace App\Command;
 
-use App\Service\{DocumentText, Elastic, Embeddings};
+use App\Service\{DocumentText, Elastic, Embeddings, SearchDocument};
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\{InputInterface, InputOption};
@@ -83,13 +83,7 @@ final class IndexCommand extends Command
                     $ndjson .= json_encode([$op => ['_index' => $index, '_id' => $row['id'], 'version' => (int) $row['revision'], 'version_type' => 'external_gte']], JSON_THROW_ON_ERROR)."\n";
                     if (!$row['deleted']) {
                         $row['semantic']['identifiers'] = $this->text->identifiers($row['doc']);
-                        $original = json_decode($row['document'], false, 512, JSON_THROW_ON_ERROR);
-                        // Retain specificList in PostgreSQL, but omit it from the search
-                        // document: the existing keyword mapping cannot accept its objects.
-                        foreach ($original->variants as $variant) {
-                            unset($variant->specificList);
-                        }
-                        $original->semantic = $row['semantic'];
+                        $original = SearchDocument::fromJson($row['document'], $row['semantic']);
                         $ndjson .= json_encode($original, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE)."\n";
                     }
                 }
