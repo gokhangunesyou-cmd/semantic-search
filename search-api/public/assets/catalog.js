@@ -45,10 +45,10 @@ function productCard(item, index) {
   const picture = element('div', 'picture');
   picture.append(element('span', 'placeholder', 'Görsel mevcut değil'));
   const images = Array.isArray(variant.images) ? variant.images : [];
-  const source = (images.find(img => img.isDefault) ?? images[0])?.src;
+  const source = 'https://dummyimage.com/{size}'; /**(images.find(img => img.isDefault) ?? images[0])?.src**/;
   if (typeof source === 'string') {
     try {
-      const url = new URL(source.replace('{size}', '400x400/'));
+      const url = new URL(source.replace('{size}', '200x200/'));
       if (['https:', 'http:'].includes(url.protocol)) {
         const img = document.createElement('img');
         img.alt = variant.name ?? 'Ürün görseli';

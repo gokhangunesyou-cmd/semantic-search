@@ -1,58 +1,61 @@
 <!doctype html>
 <html lang="tr">
+
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Ürün arama</title>
-    <link rel="stylesheet" href="/assets/catalog.css">
-    <script src="/assets/catalog.js" defer></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ürün arama</title>
+  <link rel="stylesheet" href="/assets/catalog.css">
+  <script src="/assets/catalog.js?v=2" defer></script>
 </head>
+
 <body>
-<main>
+  <main>
     <header>
-        <h1>Ürün arama</h1>
-        <a href="/docs">API dokümanı</a>
+      <h1>Ürün arama</h1>
+      <a href="/docs">API dokümanı</a>
     </header>
     <form id="search-form" method="get">
-        <label for="query">Arama</label>
-        <div class="searchbox">
-            <input id="query" name="query" type="search" placeholder="Ürün adı veya arama metni"
-                   required maxlength="2000" autocomplete="off">
-            <button type="submit">Ara</button>
-        </div>
-        <div class="options">
-            <label for="mode">Arama türü
-                <select id="mode" name="mode">
-                    <option value="semantic">Semantik</option>
-                    <option value="hybrid">Hibrit</option>
-                </select>
-            </label>
-            <label for="limit">Ürün sayısı
-                <select id="limit" name="limit">
-                    <option value="12">12</option>
-                    <option value="24">24</option>
-                    <option value="50">50</option>
-                </select>
-            </label>
-        </div>
+      <label for="query">Arama</label>
+      <div class="searchbox">
+        <input id="query" name="query" type="search" placeholder="Ürün adı veya arama metni" required maxlength="2000"
+          autocomplete="off">
+        <button type="submit">Ara</button>
+      </div>
+      <div class="options">
+        <label for="mode">Arama türü
+          <select id="mode" name="mode">
+            <option value="semantic">Semantik</option>
+            <option value="hybrid">Hibrit</option>
+          </select>
+        </label>
+        <label for="limit">Ürün sayısı
+          <select id="limit" name="limit">
+            <option value="12">12</option>
+            <option value="24">24</option>
+            <option value="50">50</option>
+          </select>
+        </label>
+      </div>
     </form>
     <section class="results" aria-labelledby="results-title" aria-busy="false">
-        <div class="results-heading">
-            <h2 id="results-title">Sonuçlar</h2>
-            <span id="result-meta"></span>
-            <button id="response-button" type="button" disabled>Tüm API yanıtı</button>
-        </div>
-        <p class="score-note">Score sıralama puanıdır, yüzde değildir. Arama türleri arasında karşılaştırılamaz.</p>
-        <p id="status" role="status" aria-live="polite">Ürünleri görmek için arama yapın.</p>
-        <div id="products"></div>
+      <div class="results-heading">
+        <h2 id="results-title">Sonuçlar</h2>
+        <span id="result-meta"></span>
+        <button id="response-button" type="button" disabled>Tüm API yanıtı</button>
+      </div>
+      <p class="score-note">Score sıralama puanıdır, yüzde değildir. Arama türleri arasında karşılaştırılamaz.</p>
+      <p id="status" role="status" aria-live="polite">Ürünleri görmek için arama yapın.</p>
+      <div id="products"></div>
     </section>
-</main>
-<dialog id="data-dialog" aria-labelledby="data-title">
+  </main>
+  <dialog id="data-dialog" aria-labelledby="data-title">
     <div class="dialog-heading">
-        <h2 id="data-title">API verisi</h2>
-        <form method="dialog"><button>Kapat</button></form>
+      <h2 id="data-title">API verisi</h2>
+      <form method="dialog"><button>Kapat</button></form>
     </div>
     <pre id="data-content" tabindex="0"></pre>
-</dialog>
+  </dialog>
 </body>
+
 </html>
