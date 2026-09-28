@@ -1055,7 +1055,7 @@
             "example": "11,12"
           }
         ],
-        "description": "Tek script_score sorgusu: semantic.vector ana benzerlik skoru + 0.4 × ad + 0.5 × kategori + 0.1 × marka. Sabit aday sınırı ve kNN ön seçimi yoktur; limit yalnızca döndürülecek ürün sayısıdır. Filtreye uyan, ana vektörlü bütün ürünler puanlanır. Eksik boost alanlarının katkısı 0. Alan vektörleri app:products:index-v2 ile hazırlanır. Arama sırasında mapping veya sürüm kontrolü yapılmaz. Büyük kataloglarda yaklaşık kNN aramasından daha maliyetlidir."
+        "description": "script_score ana vektör benzerlik skorunu ve alan boost’larını hesaplar; function_score sonucu category.categoryFactor ile çarpar (alan yoksa 1). Sabit aday sınırı ve kNN ön seçimi yoktur; limit yalnızca döndürülecek ürün sayısıdır. Filtreye uyan, ana vektörlü bütün ürünler puanlanır. Eksik boost alanlarının katkısı 0. Alan vektörleri app:products:index-v2 ile hazırlanır. Arama sırasında mapping veya sürüm kontrolü yapılmaz. Büyük kataloglarda yaklaşık kNN aramasından daha maliyetlidir."
       }
     }
   },

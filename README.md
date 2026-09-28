@@ -243,8 +243,9 @@ eklendikten sonra normal indeksleyici de yeni/değişen ürünlerin v2 vektörle
 bu kilidi kullanmadığından bu komut sırasında durdurulmalıdır; doğrudan ES yazmaları bu uygulamanın desteklediği
 güncelleme akışı değildir.
 
-V2, tek Elasticsearch `script_score` sorgusunda `semantic.vector` benzerliğini ana skor olarak hesaplar;
-ad, kategori ve marka vektörleri bu skora boost ekler. Sabit aday havuzu, kNN ön seçimi veya ikinci sorgu yoktur.
+V2, Elasticsearch `script_score` sorgusunda `semantic.vector` benzerliğini ana skor olarak hesaplar;
+ad, kategori ve marka vektörleri bu skora boost ekler. Dış `function_score`, sonucu `category.categoryFactor`
+ile çarpar; alan yoksa katsayı 1 kabul edilir. Sabit aday havuzu, kNN ön seçimi veya ikinci sorgu yoktur.
 `limit` yalnızca döndürülen ürün sayısını belirler; puanlanan ürün sayısını sınırlamaz.
 
 Son puan: `1.0 × ana vektör + 0.4 × ad + 0.5 × kategori + 0.1 × marka`.

@@ -18,12 +18,24 @@ final class ProductVectorQuery
                 . " score += params.$field * (cosineSimilarity(params.vector, '$path') + 1.0) / 2.0; }";
         }
         $script .= ' return Math.max(0.0, score);';
-        return ['script_score' => [
-            'query' => ['bool' => ['filter' => $filters]],
-            'script' => [
-                'source' => $script,
-                'params' => ['vector' => $vector, 'semantic' => self::BASE_WEIGHT] + self::WEIGHTS
-            ]
+        return ['function_score' => [
+            'query' => ['script_score' => [
+                'query' => ['bool' => ['filter' => $filters]],
+                'script' => [
+                    'source' => $script,
+                    'params' => ['vector' => $vector, 'semantic' => self::BASE_WEIGHT] + self::WEIGHTS
+                ]
+            ]],
+            'functions' => [[
+                'script_score' => [
+                    'script' => [
+                        'source' => "double factor = 1.0; if (doc.containsKey('category.categoryFactor') "
+                            . "&& doc['category.categoryFactor'].size() != 0) { "
+                            . "factor = doc['category.categoryFactor'].value; } return _score * factor;"
+                    ]
+                ]
+            ]],
+            'boost_mode' => 'replace'
         ]];
     }
 }

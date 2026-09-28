@@ -19,13 +19,15 @@ final class QueryBuilderV2Test extends TestCase
         self::assertTrue($second['_source']);
         self::assertSame(2, $first['size']);
         self::assertSame(5, $second['size']);
-        self::assertCount(2, $second['query']['script_score']['query']['bool']['filter']);
+        self::assertCount(2, $second['query']['function_score']['query']['script_score']['query']['bool']['filter']);
         $nextRequest = $prototype->vector([0, 1])->build();
         self::assertSame(
             [['exists' => ['field' => 'semantic.vector']]],
-            $nextRequest['query']['script_score']['query']['bool']['filter']
+            $nextRequest['query']['function_score']['query']['script_score']['query']['bool']['filter']
         );
         self::assertArrayNotHasKey('knn', $nextRequest);
-        self::assertSame([0, 1], $nextRequest['query']['script_score']['script']['params']['vector']);
+        self::assertSame(
+            [0, 1], $nextRequest['query']['function_score']['query']['script_score']['script']['params']['vector']
+        );
     }
 }

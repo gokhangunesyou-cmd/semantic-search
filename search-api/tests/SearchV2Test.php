@@ -30,21 +30,26 @@ final class SearchV2Test extends TestCase
             self::assertArrayNotHasKey('knn', $body);
             self::assertSame(2, $body['size']);
             self::assertTrue($body['_source']);
-            $scoring = $body['query']['script_score'];
-            $filters = $scoring['query']['bool']['filter'];
+            $scoring = $body['query']['function_score'];
+            $vectorScoring = $scoring['query']['script_score'];
+            $filters = $vectorScoring['query']['bool']['filter'];
             self::assertCount(3, $filters);
             self::assertSame(['term' => ['brand.id' => '7']], $filters[0]);
             self::assertSame('category.tree', $filters[1]['bool']['should'][1]['nested']['path']);
             self::assertSame(['exists' => ['field' => 'semantic.vector']], $filters[2]);
             self::assertStringNotContainsString('"ids"', json_encode($body));
-            self::assertSame(1.0, $scoring['script']['params']['semantic']);
+            self::assertSame(1.0, $vectorScoring['script']['params']['semantic']);
             self::assertStringContainsString(
-                "cosineSimilarity(params.vector, 'semantic.vector')", $scoring['script']['source']
+                "cosineSimilarity(params.vector, 'semantic.vector')", $vectorScoring['script']['source']
             );
-            self::assertSame(0.5, $scoring['script']['params']['category']);
+            self::assertSame(0.5, $vectorScoring['script']['params']['category']);
             foreach (array_keys(ProductVectorQuery::WEIGHTS) as $field) {
-                self::assertStringContainsString("semantic.v2.$field.vector", $scoring['script']['source']);
+                self::assertStringContainsString("semantic.v2.$field.vector", $vectorScoring['script']['source']);
             }
+            self::assertSame('replace', $scoring['boost_mode']);
+            self::assertStringContainsString(
+                "return _score * factor;", $scoring['functions'][0]['script_score']['script']['source']
+            );
             return new MockResponse(json_encode(['hits' => ['hits' => [[
                 '_id' => 'phone', '_score' => 0.9,
                 '_source' => ['id' => 'phone', 'empty' => new \stdClass(), 'list' => [],
