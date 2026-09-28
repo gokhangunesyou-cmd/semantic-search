@@ -17,7 +17,7 @@
           "Arama"
         ],
         "operationId": "search",
-        "summary": "Semantik veya hibrit ürün arama",
+        "summary": "Semantik ürün arama",
         "responses": {
           "200": {
             "description": "Başarılı",
@@ -69,8 +69,7 @@
             "schema": {
               "type": "string",
               "enum": [
-                "semantic",
-                "hybrid"
+                "semantic"
               ],
               "default": "semantic"
             },

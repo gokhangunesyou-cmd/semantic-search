@@ -72,11 +72,10 @@ def main():
     assert len(vector) == 384 and abs(math.sqrt(sum(v*v for v in vector)) - 1) < 1e-5
     before = esdoc()['semantic']
     assert '0 kayıt' in command('app:products:index'), 'Second run must skip unchanged rows'
-    for mode in ['semantic', 'hybrid']:
-        results = request('GET', '/api/search', {'query': 'tam yatan bebek arabası', 'mode': mode, 'brand_id': '20048005', 'category_ids': '11'})
-        assert len(results['items']) == 1 and results['items'][0]['document'] == SAMPLE
+    results = request('GET', '/api/search', {'query': 'tam yatan bebek arabası', 'brand_id': '20048005', 'category_ids': '11'})
+    assert len(results['items']) == 1 and results['items'][0]['document'] == SAMPLE
     assert request('GET', '/api/search', {'query': 'bebek arabası', 'brand_id': 'missing'})['count'] == 0
-    print('PASS: DB round-trip, original ES _source, real embeddings, idempotency, filters, semantic/hybrid results')
+    print('PASS: DB round-trip, original ES _source, real embeddings, idempotency, filters, semantic results')
 
     changed = copy.deepcopy(SAMPLE)
     changed['variants'][0]['merchants'][0]['price'] = 1234.5

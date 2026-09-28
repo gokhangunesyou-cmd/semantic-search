@@ -1,7 +1,6 @@
 'use strict';
 const form = document.querySelector('#search-form');
 const query = document.querySelector('#query');
-const mode = document.querySelector('#mode');
 const limit = document.querySelector('#limit');
 const products = document.querySelector('#products');
 const status = document.querySelector('#status');
@@ -114,7 +113,7 @@ async function search(updateUrl = true) {
   activeRequest?.abort();
   const request = new AbortController();
   activeRequest = request;
-  const params = new URLSearchParams({ query: term, mode: mode.value, limit: limit.value });
+  const params = new URLSearchParams({ query: term, limit: limit.value });
   if (updateUrl) {
     const url = new URL(window.location.href);
     params.forEach((value, key) => url.searchParams.set(key, value));
@@ -143,8 +142,7 @@ async function search(updateUrl = true) {
     data.items.forEach((item, index) => fragment.append(productCard(item, index)));
     products.replaceChildren(fragment);
     const elapsed = ((performance.now() - started) / 1000).toLocaleString('tr-TR', { maximumFractionDigits: 2 });
-    const modeName = data.mode === 'hybrid' ? 'Hibrit' : 'Semantik';
-    meta.textContent = `${data.items.length} ürün · ${modeName} · ${elapsed} sn`;
+    meta.textContent = `${data.items.length} ürün · ${elapsed} sn`;
     if (data.items.length) {
       status.hidden = true;
     } else {
@@ -175,7 +173,6 @@ function restoreFromUrl() {
   const params = new URLSearchParams(window.location.search);
   query.value = params.get('query') ?? '';
   query.setCustomValidity('');
-  mode.value = ['semantic', 'hybrid'].includes(params.get('mode')) ? params.get('mode') : 'semantic';
   limit.value = ['12', '24', '50'].includes(params.get('limit')) ? params.get('limit') : '12';
   products.replaceChildren();
   meta.textContent = '';

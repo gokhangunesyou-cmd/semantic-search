@@ -6,11 +6,11 @@
 
 ## Ürün listeleme arayüzü
 
-Search API alan adının kök adresi (`/`) tek sayfalık ürün arama ekranıdır. Arama metnini girip **Ara** düğmesine basın; semantik veya hibrit modda 12, 24 ya da 50 sonuç isteyebilirsiniz. Ürün listesi API sırasını korur ve her ürünün `items[].score` değerini yuvarlamadan gösterir. Score yüzde değildir; semantik skor ile hibrit RRF skoru farklı ölçeklerde olduğundan doğrudan karşılaştırılmamalıdır.
+Search API alan adının kök adresi (`/`) tek sayfalık ürün arama ekranıdır. Arama metnini girip **Ara** düğmesine basın; semantik aramayla 12, 24 ya da 50 sonuç isteyebilirsiniz. Ürün listesi API sırasını korur ve her ürünün `items[].score` değerini yuvarlamadan gösterir. Score yüzde değildir.
 
 Satırlar ana ürün ID’sine uyan varyantı, bulunamazsa ilk varyantı gösterir. Görsel, ürün adı, marka, kategori ve seçilen varyantın buybox satıcısının (yoksa ilk satıcının) fiyatı kullanılır. Eksik görsel/fiyat için açıklama gösterilir. Görseller ürün verisindeki HTTP(S) adreslerinden yüklenir. Arama `GET /api/search` üzerinden aynı origin üzerinde yapılır; ayrı frontend servisi veya build adımı gerekmez. Değişiklikler normal Git push → Coolify Deploy akışıyla yayınlanır.
 
-Arama metni, türü ve sonuç sayısı URL'de `?query=bebek+arabası&mode=semantic&limit=12` biçiminde tutulur.
+Arama metni ve sonuç sayısı URL'de `?query=bebek+arabası&limit=12` biçiminde tutulur.
 URL'deki `query` değiştirilerek veya bağlantı paylaşılarak aynı arama açılabilir; geri/ileri gezinme de desteklenir.
 Her satırdaki **Ürün verisi** butonu ilgili API sonuç nesnesini, **Tüm API yanıtı** butonu mevcut aramanın
 bütün yanıtını JSON olarak açar. Veriler API'nin döndürdüğü tüm alanları içerir; ayrı istek yapılmaz.
@@ -167,14 +167,14 @@ PUT gövdesi doğrudan ürün JSON'udur; `document` veya `payload` içine sarıl
 Tarayıcı adres çubuğundan açılabilecek örnekler (kendi Search API adresinize ekleyin):
 
 ```text
-/api/search?query=bebek%20arabası&mode=semantic&limit=10
+/api/search?query=bebek%20arabası&limit=10
 /api/search?query=bebek%20arabası&brand_id=20048005&category_ids=11,12
 /api/embedding/v1/embeddings?kind=query&texts=bebek%20arabası
 ```
 
 Arama parametreleri URL query string üzerinden gönderilir. `brand_id` ve virgülle ayrılmış `category_ids` opsiyoneldir. Embedding için `kind=query|document` ve `texts` gerekir; birden fazla metin için `texts=ilk&texts=ikinci` kullanılır (1–8 metin). Dışarıya açılan arama ve embedding yolları yalnızca GET kabul eder. Uzun dokümanların toplu indekslenmesi için iç embedding servisi POST desteğini korur; bu dahili işlem Swagger'da gösterilmez.
 
-Marka ve kategori AND, kategori listesi OR mantığıyla uygulanır. Kategori ağacı nested ise uygun nested query kullanılır. Filtre kNN aday seçimine uygulanır. Varsayılan mod `semantic`; `hybrid` modda BM25 ve vektör aramasının ilk 50 adayı uygulamada RRF (`k=60`) ile birleştirilir. Doküman kimliği ve barkodlar kesin eşleşmeye eklenir; ürün model kodları ürün metninde aranır. Limit 1–50; derin sayfalama yoktur. Skor olasılık değildir.
+Marka ve kategori AND, kategori listesi OR mantığıyla uygulanır. Kategori ağacı nested ise uygun nested query kullanılır. Filtre kNN aday seçimine uygulanır. Arama semantik kNN ile yapılır. Limit 1–50; derin sayfalama yoktur. Skor olasılık değildir.
 
 Yanıt: `mode`, `count`, `items: [{id, score, document}]`. `document`, **orijinal ürünün tüm alanlarını** içerir. Hangi varyantın eşleştiği hesaplanmaz. Stok/fiyat/renk kombinasyon filtreleri bu sürümün API kapsamına dahil değildir; nested mapping ileride bunları doğru kurmak için korunur.
 

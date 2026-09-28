@@ -73,7 +73,7 @@ final class SearchV2Test extends TestCase
         $http = new MockHttpClient();
         $controller = $this->controller($http);
         $queries = [
-            '', '?query[]=x', '?query=x&mode=hybrid', '?query=x&limit=abc', '?query=x&limit=0',
+            '', '?query[]=x', '?query=x&mode=unsupported', '?query=x&limit=abc', '?query=x&limit=0',
             '?query=x&limit=51', '?query=x&brand_id[]=1', '?query=x&category_ids=',
             '?query=x&category_ids[0][]=1'
         ];

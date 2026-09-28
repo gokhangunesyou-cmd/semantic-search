@@ -43,7 +43,7 @@ final class SearchGetTest extends TestCase
         $semantic = ['text' => 'Telefon', 'vector' => [1, 0], 'v2' => [
             'name' => ['text' => 'Telefon adı', 'vector' => [0, 1]]
         ]];
-        foreach (['semantic', 'hybrid'] as $mode) {
+        $mode = 'semantic';
             $http = new MockHttpClient(function ($method, $url, $options) use ($semantic) {
                 if (str_ends_with($url, '/_mapping')) {
                     return new MockResponse(json_encode(['products' => ['mappings' => ['_meta' => [
@@ -67,7 +67,7 @@ final class SearchGetTest extends TestCase
             self::assertSame(200, $response->getStatusCode());
             $body = json_decode($response->getContent(), true);
             self::assertSame($semantic, $body['items'][0]['document']['semantic']);
-            self::assertSame($mode === 'hybrid' ? 4 : 3, $http->getRequestsCount());
+            self::assertSame(3, $http->getRequestsCount());
         }
     }
 
@@ -75,7 +75,7 @@ final class SearchGetTest extends TestCase
     {
         $http = new MockHttpClient();
         $controller = $this->controller($http);
-        foreach (['', '?query=x&limit=abc', '?query=x&limit=1.5', '?query=x&limit=0', '?query=x&limit=51', '?query[]=x', '?query=x&mode=bad'] as $query) {
+        foreach (['', '?query=x&limit=abc', '?query=x&limit=1.5', '?query=x&limit=0', '?query=x&limit=51', '?query[]=x', '?query=x&mode=unsupported', '?query=x&mode=bad'] as $query) {
             self::assertSame(400, $controller->search(Request::create('/api/search'.$query))->getStatusCode());
         }
         self::assertSame(0, $http->getRequestsCount());
