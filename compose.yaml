@@ -47,7 +47,8 @@ services:
       dockerfile: embedding-api/Dockerfile
     command: ["python", "download_model.py"]
     environment:
-      MODEL_DIR: /models/e5-small
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-intfloat/multilingual-e5-small}
+      EMBEDDING_REVISION: ${EMBEDDING_REVISION:-}
       HF_HUB_DISABLE_TELEMETRY: "1"
     volumes:
       - model_data:/models
@@ -59,14 +60,14 @@ services:
       context: .
       dockerfile: embedding-api/Dockerfile
     environment:
-      MODEL_DIR: /models/e5-small
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-intfloat/multilingual-e5-small}
+      EMBEDDING_REVISION: ${EMBEDDING_REVISION:-}
       MODEL_FILE: ${MODEL_FILE:-onnx/model.onnx}
-      EMBEDDING_VERSION: ${EMBEDDING_VERSION:-e5-small-onnx-fp32-v1}
       INFERENCE_THREADS: "2"
       HF_HUB_DISABLE_TELEMETRY: "1"
     volumes:
       - model_data:/models
-    mem_limit: 1536m
+    mem_limit: 3g
     cpus: 2
     depends_on:
       model-init: {condition: service_completed_successfully}
@@ -74,7 +75,7 @@ services:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/ready')"]
       interval: 15s
       timeout: 5s
-      start_period: 90s
+      start_period: 180s
       retries: 5
     restart: unless-stopped
 
@@ -95,7 +96,9 @@ services:
       ELASTICSEARCH_INDEX: ${ELASTICSEARCH_INDEX:-products_v1}
       ELASTICSEARCH_ALIAS: ${ELASTICSEARCH_ALIAS:-products_current}
       EMBEDDING_URL: http://embedding:8000
-      EMBEDDING_VERSION: ${EMBEDDING_VERSION:-e5-small-onnx-fp32-v1}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-intfloat/multilingual-e5-small}
+      EMBEDDING_REVISION: ${EMBEDDING_REVISION:-}
+      MODEL_FILE: ${MODEL_FILE:-onnx/model.onnx}
     volumes:
       - import_data:/data
     expose: ["80"]

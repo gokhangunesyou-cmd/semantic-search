@@ -3,11 +3,11 @@ namespace App\Service;
 
 final class Mapping
 {
-    public static function semantic(): array
+    public static function semantic(int $dimensions = 384): array
     {
         return ['properties' => [
             'text' => ['type' => 'text', 'analyzer' => 'turkish'],
-            'vector' => ['type' => 'dense_vector', 'dims' => 384, 'index' => true, 'similarity' => 'cosine', 'index_options' => ['type' => 'int8_hnsw']],
+            'vector' => ['type' => 'dense_vector', 'dims' => $dimensions, 'index' => true, 'similarity' => 'cosine', 'index_options' => ['type' => 'int8_hnsw']],
             'hash' => ['type' => 'keyword'], 'version' => ['type' => 'keyword'],
             'truncated' => ['type' => 'boolean'], 'token_count' => ['type' => 'integer'],
             'identifiers' => ['type' => 'keyword'],

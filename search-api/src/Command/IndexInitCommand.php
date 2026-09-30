@@ -18,6 +18,7 @@ final class IndexInitCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $body = $this->mapping->load($input->getOption('mapping'), $this->embeddings->version());
+        $body['mappings']['properties']['semantic'] = Mapping::semantic($this->embeddings->dimensions());
         $this->elastic->request('PUT', rawurlencode($this->elastic->index()), $body);
         $output->writeln('İndeks oluşturuldu. Kaynak alanlar kökte; variants ve variants.merchants nested.');
         return Command::SUCCESS;

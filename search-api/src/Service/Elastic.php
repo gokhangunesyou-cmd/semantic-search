@@ -5,11 +5,18 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final class Elastic
 {
+    private ?string $indexOverride = null;
+
     public function __construct(private HttpClientInterface $http) {}
 
     public function index(): string
     {
-        return getenv('ELASTICSEARCH_INDEX') ?: 'products_v1';
+        return $this->indexOverride ?? (getenv('ELASTICSEARCH_INDEX') ?: 'products_v1');
+    }
+
+    public function useIndex(string $index): void
+    {
+        $this->indexOverride = $index;
     }
 
     public function alias(): string

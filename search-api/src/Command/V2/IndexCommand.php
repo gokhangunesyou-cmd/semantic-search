@@ -59,7 +59,7 @@ final class IndexCommand extends Command
                 throw new \RuntimeException('İndeks/model sürümü uyuşmuyor.');
             }
             $this->elastic->request('PUT', $path . '/_mapping', [
-                'properties' => ['semantic' => ['properties' => ['v2' => FieldVectors::mapping()]]]
+                'properties' => ['semantic' => ['properties' => ['v2' => FieldVectors::mapping($this->embeddings->dimensions())]]]
             ]);
             $page = $this->elastic->request('POST', $path . '/_search?scroll=30m', [
                 'size' => $size, 'sort' => ['_doc'], '_source' => true,

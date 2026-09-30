@@ -1,5 +1,4 @@
 import asyncio
-import os
 from contextlib import asynccontextmanager
 from typing import Annotated, Literal
 
@@ -7,6 +6,7 @@ from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field, field_validator
 
 from app.engine import Engine
+from app.model_config import embedding_version
 
 
 class EmbeddingRequest(BaseModel):
@@ -22,14 +22,14 @@ class EmbeddingRequest(BaseModel):
 
 
 class EmbeddingItem(BaseModel):
-    embedding: list[float] = Field(min_length=384, max_length=384)
+    embedding: list[float] = Field(min_length=1)
     token_count: int
     truncated: bool
 
 
 class EmbeddingResponse(BaseModel):
     model_version: str
-    dimensions: Literal[384]
+    dimensions: int
     items: list[EmbeddingItem]
 
 
@@ -45,7 +45,7 @@ def create_app(engine_factory=Engine):
         lifespan=lifespan,
         title='Embedding API',
         version='1.0.0',
-        description='Türkçe ürün ve sorgu metinlerinden 384 boyutlu vektör üretir. API anahtarı gerekmez.',
+        description='Ürün ve sorgu metinlerinden normalize embedding vektörleri üretir.',
         swagger_ui_parameters={'tryItOutEnabled': True},
     )
 
@@ -57,7 +57,10 @@ def create_app(engine_factory=Engine):
     async def ready():
         if not getattr(app.state, 'engine', None):
             raise HTTPException(503, 'Model not ready')
-        return {'status': 'ready', 'model_version': os.getenv('EMBEDDING_VERSION', 'e5-small-onnx-fp32-v1')}
+        return {
+            'status': 'ready', 'model_version': app.state.engine.version,
+            'dimensions': app.state.engine.dimensions,
+        }
 
     @app.get('/v1/embeddings', tags=['Embedding'], response_model=EmbeddingResponse,
              responses={429: {'description': 'Embedding kapasitesi dolu; Retry-After ile yeniden deneyin.'}})
@@ -80,7 +83,11 @@ def create_app(engine_factory=Engine):
                 except asyncio.CancelledError:
                     await task
                     raise
-            return {'model_version': os.getenv('EMBEDDING_VERSION', 'e5-small-onnx-fp32-v1'), 'dimensions': 384, 'items': items}
+            dimensions = getattr(app.state.engine, 'dimensions', len(items[0]['embedding']) if items else 0)
+            return {
+                'model_version': getattr(app.state.engine, 'version', embedding_version()),
+                'dimensions': dimensions, 'items': items
+            }
         finally:
             app.state.admitted -= 1
 

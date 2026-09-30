@@ -58,14 +58,14 @@ final class FieldVectors
         return $result;
     }
 
-    public static function mapping(): array
+    public static function mapping(int $dimensions = 384): array
     {
         $properties = ['hash' => ['type' => 'keyword'], 'version' => ['type' => 'keyword']];
         foreach (self::FIELDS as $field) {
             $properties[$field] = ['properties' => [
                 'text' => ['type' => 'text', 'index' => false],
                 'vector' => [
-                    'type' => 'dense_vector', 'dims' => 384, 'index' => true,
+                    'type' => 'dense_vector', 'dims' => $dimensions, 'index' => true,
                     'similarity' => 'cosine', 'index_options' => ['type' => 'int8_hnsw']
                 ],
                 'truncated' => ['type' => 'boolean'], 'token_count' => ['type' => 'integer']

@@ -21,7 +21,7 @@ Sayısal vektörler **Ürün verisi** ve **Tüm API yanıtı** içinde görüleb
 
 Ürün `products.document` JSONB kolonunda bütün haliyle saklanır. PostgreSQL'de JSONB tercihinin amacı; varyant, satıcı, özellik, kampanya ve diğer alanları kaybetmeden orijinal dokümanı kaynak veri olarak tutmaktır. Varyantlar ayrı ürün kayıtlarına dönüştürülmez.
 
-Elasticsearch `_source` alanında **orijinal ürün alanları aynı seviyede kalır**: `variants`, `brand`, `category`, `breadcrumb` vb. `payload` sarmalayıcısı yoktur. Yalnızca köke uygulamaya ayrılmış `semantic` nesnesi eklenir. Her ana dokümanda bir adet 384 boyutlu vektör vardır. Arama sonucu orijinal dokümanı, tüm varyant ve satıcılarıyla verir; `/api/search` ve `/api/v2/search` yanıtlarında `items[].document.semantic` nesnesi de döner.
+Elasticsearch `_source` alanında **orijinal ürün alanları aynı seviyede kalır**: `variants`, `brand`, `category`, `breadcrumb` vb. `payload` sarmalayıcısı yoktur. Yalnızca köke uygulamaya ayrılmış `semantic` nesnesi eklenir. Her ana dokümanda seçili model boyutunda bir vektör vardır. Arama sonucu orijinal dokümanı, tüm varyant ve satıcılarıyla verir; `/api/search` ve `/api/v2/search` yanıtlarında `items[].document.semantic` nesnesi de döner.
 Bu nesne ana `text` ve `vector` alanlarını, varsa `v2` altındaki ad/kategori/marka metin ve vektörlerini içerir.
 İndekste mevcut veriler doğrudan döner; bu yanıt değişikliği için yeniden indeksleme gerekmez.
 
@@ -42,19 +42,19 @@ Komut kaynak mapping'in mevcut alanlarını değiştirmeden `semantic` alanını
 
 ## Model
 
-- `intfloat/multilingual-e5-small`
-- Sabit Hugging Face revision: `614241f622f53c4eeff9890bdc4f31cfecc418b3`
-- CPU / ONNX Runtime, tek worker, iki inference thread'i.
-- Maskeli mean pooling + L2 normalization; 384 float.
-- Dokümanlarda `passage:`, sorgularda `query:` öneki Python tarafından eklenir.
-- Önek ve özel token'lar dahil 512 token sınırı. Kesilme bilgisi kaydedilir.
+- Varsayılan `intfloat/multilingual-e5-small`; sabit revision ve CPU/ONNX Runtime.
+- Trendyol alternatifi: `Trendyol/TY-ecomm-embed-multilingual-base-v1.2.0`; CPU Sentence Transformers, 768 boyut.
+- Model `EMBEDDING_MODEL` ile seçilir. Özel bir Hugging Face modeli için sabit `EMBEDDING_REVISION` da verin.
+- Boyut ve sürüm embedding servisi tarafından bildirilir; Elasticsearch mapping'i yeni indekste bu boyuta göre hazırlanır.
+- E5, sorguya `query:` ve ürün metnine `passage:` öneklerini ekler. Sentence Transformers modeli kendi sentence embedding düzenini kullanır.
+- Kesilme bilgisi kaydedilir; E5 için 512, Trendyol modeli için 384 token sınırı kullanılır.
 - İstek başına 1–8 metin; bir çalışan inference ve en fazla üç bekleyen istek; doluysa HTTP 429.
-- Uzun batch'ler içeride en fazla 1024 padded token içeren küçük gruplara ayrılır; yanıt sırası korunur. Bu sınır küçük sunucuda bellek sıçramasını azaltır.
+- Uzun batch'ler içeride küçük gruplara ayrılır; yanıt sırası korunur.
 - Varsayılan FP32 ONNX, kalite referansıdır. INT8 denemesi `quantize_model.py` ile ayrı yapılır; karşılaştırma olmadan INT8 üstün kabul edilmez.
 
-INT8 denemesi için ayrı test ortamında `requirements-quantize.txt` bağımlılıklarını kurup `python quantize_model.py` çalıştırın. Oluşan `onnx/model.int8.onnx` dosyasını `MODEL_FILE` olarak seçerken yeni `EMBEDDING_VERSION` ve yeni Elasticsearch indeksi kullanın.
+INT8 denemesi için ayrı test ortamında `requirements-quantize.txt` bağımlılıklarını kurup `python quantize_model.py` çalıştırın. Oluşan `onnx/model.int8.onnx` dosyasını `MODEL_FILE` olarak seçin; bu dosya yolu model sürümüne dahil edilir.
 
-Model dosyaları `model-init` tek seferlik servisi tarafından kalıcı volume'a indirilir. Normal embedding API başlangıcı indirme veya dönüşüm yapmaz. İnternet yalnızca ilk image/model hazırlığında gerekir.
+Model dosyaları `model-init` tek seferlik servisi tarafından kalıcı volume'a indirilir. Model seçimi değişince embedding image'ı yeniden oluşturulmalı ve yeni model indirilmeli. Trendyol Sentence Transformers modeli, E5 ONNX modelinden daha fazla bellek kullanır; Compose embedding sınırı 3 GiB olarak ayarlanmıştır. İnternet ilk image/model hazırlığında gerekir.
 
 ## Coolify kurulumu
 
@@ -77,7 +77,7 @@ PostgreSQL kendi veritabanını hazırlar; uygulama tabloları `search-api` baş
 
 Eski deployment'ta `001-products.sql: Is a directory` hatası görüldüyse düzeltilmiş Compose dosyasını deploy edin. Mevcut PostgreSQL volume'unu koruyun: DB zaten oluşmuş olsa bile eksik uygulama tabloları Symfony başlangıcında tamamlanır. İlk kurulum başarısız olduktan sonra PostgreSQL'in `healthy` görünmesi tek başına ürün tablolarının oluştuğunu göstermez.
 
-Kaynak bütçeleri: Elasticsearch 3 GiB (1,5 GiB heap), embedding 1,5 GiB, Symfony 768 MiB, PostgreSQL 384 MiB. `model-init` 512 MiB limitlidir ve embedding başlamadan tamamlanır. Host işletim sistemi/Coolify için kalan alan ayrılır; gerçek tüketim sunucuda ölçülmelidir.
+Kaynak bütçeleri: Elasticsearch 3 GiB (1,5 GiB heap), embedding en fazla 3 GiB, Symfony 768 MiB, PostgreSQL 384 MiB. `model-init` 512 MiB limitlidir ve embedding başlamadan tamamlanır. Trendyol modeli seçilince hostta daha fazla boş bellek gerekir; gerçek tüketim sunucuda ölçülmelidir.
 
 ### Elasticsearch'e yerel ağdan erişim
 
@@ -95,7 +95,7 @@ Yerel testte `compose.test.yaml`, `!override` ile bu eşlemeyi yalnızca `127.0.
 
 ## DB'ye ürün yükleme ve Elasticsearch'e aktarma
 
-### Hazır 2.824 ürünü sunucuda DB'ye yükleme
+### Hazır 3.028 ürünü sunucuda DB'ye yükleme
 
 `infrastructure/datasets/products.ndjson` Git ile taşınan ürün dosyasıdır ve deploy sırasında uygulama imajına dahil edilir. Git push ve Coolify Deploy sonrasında **Search API servisinin terminalinde** çalıştırın:
 
@@ -103,9 +103,9 @@ Yerel testte `compose.test.yaml`, `!override` ile bu eşlemeyi yalnızca `127.0.
 php bin/console app:products:import
 ```
 
-Komut bu dosyadaki 2.824 ürünü yalnızca PostgreSQL'e yazar; Elasticsearch'e bağlanmaz ve embedding üretmez. Aynı ID mevcutsa ürün güncellenir; aynı veriyle tekrar çalıştırmak kopya kayıt oluşturmaz veya revision artırmaz. Diğer ürünler silinmez. Sonuçta `DB: 2824 başarılı, 0 hatalı.` görülmelidir.
+Komut bu dosyadaki 3.028 ürünü yalnızca PostgreSQL'e yazar; Elasticsearch'e bağlanmaz ve embedding üretmez. Aynı ID mevcutsa ürün güncellenir; aynı veriyle tekrar çalıştırmak kopya kayıt oluşturmaz veya revision artırmaz. Diğer ürünler silinmez. Sonuçta `DB: 3028 başarılı, 0 hatalı.` görülmelidir.
 
-Dosya, önceki `documentScore > 140` sorgusundan gelen 733 ürün ile sekiz kategori sorgusundan (her sorgu en fazla 200 ürün) gelen 1.202 ürün ve `category.tree.id = 5507609420` nested sorgusundan gelen 300 ürünün ID bazında birleştirilmiş halidir. İlk kategori aktarımındaki 10 ortak üründe son çekilen veri kullanılır. İlk nested sorgudaki 300 ürünün tamamı yenidir; toplam 2.824 benzersiz ürün bulunur. Eksik `id` alanları kaynak Elasticsearch `_id` değeriyle tamamlanır. Kategori sorgularının sonuç sayıları sırasıyla 149, 200, 53, 200, 200, 0, 200, 200 olmuştur; `category.id = 5507609420` sorgusu ürün döndürmemiştir; aynı ID için `category.tree` üzerinde nested sorguyla ayrıca 300 ürün alınmıştır. Son sorgudaki `230244433` ve `231394552` kategorileri birlikte 200 ürünle sınırlanmıştır. Ek üç `category.tree.id` sorgusundan (2311258000, 220366548, 2314109670) ayrı ayrı 200 ürün alınmıştır. Bu 600 ürünün biri mevcut dosyada da bulunduğu için 599 yeni ürün eklenmiştir. Kaynak erişim şifresi ve dışa aktarma scripti yalnızca Git'in yok saydığı yerel `data/` klasöründedir; sunucuya gönderilmez. Veri dosyası imajda `/app/infrastructure/datasets/` altında bulunur; `/data` volume'undan etkilenmez.
+Dosyada 3.028 benzersiz ürün vardır. Son eklenen `category.tree.id = 231315349` nested sorgusundan 200 ürün alınmış ve tamamı mevcut 2.828 ürüne yeni kayıt olarak eklenmiştir. Eksik `id` alanları kaynak Elasticsearch `_id` değeriyle tamamlanır. Kaynak erişim şifresi ve dışa aktarma scripti yalnızca Git'in yok saydığı yerel `data/` klasöründedir; sunucuya gönderilmez. Veri dosyası imajda `/app/infrastructure/datasets/` altında bulunur; `/data` volume'undan etkilenmez.
 
 ### Başka bir dosyadan yükleme
 
@@ -180,11 +180,15 @@ Yanıt: `mode`, `count`, `items: [{id, score, document}]`. `document`, **orijina
 
 Python kullanılamazsa arama 503 döner; sessiz metinsel fallback yoktur. Yeni embedding gereken indeksleme başarısızsa eski ES kaydı korunur ve DB değişikliği sonraki komuta kalır.
 
-## Yeni model veya mapping sürümü
+## Model değiştirip yeniden indeksleme
 
-Yeni fiziksel indeks adı (`products_v2`) kullanın. Model dosyası değişince `EMBEDDING_VERSION` da değişmelidir. İndeks metadata'sı farklıysa arama ve indeksleme reddedilir. DB checkpoint'i indeks UUID'sine bağlıdır; yeni/recreated indekste tüm kayıtlar yeniden ele alınır.
+`.env` veya Coolify değişkenlerinde `EMBEDDING_MODEL=Trendyol/TY-ecomm-embed-multilingual-base-v1.2.0` seçin. İsteğe bağlı olarak kartta sabitlenen `EMBEDDING_REVISION=760f1827952873f02336a797c6f8ad8bc9789778` değerini de verin. Kod ve Compose değişikliği deploy edildikten, servisler hazır olduktan sonra şu tek komut dosyayı DB'ye alır, yeni fiziksel indeksi modelin vektör boyutuyla kurar, bütün ürün vektörlerini yeniden üretir ve işlem başarılıysa arama aliasını yeni indekse taşır:
 
-İndeksleme `ELASTICSEARCH_INDEX` fiziksel indeksine, arama `ELASTICSEARCH_ALIAS` (varsayılan `products_current`) aliasına gider. İlk başarılı aktarım aliası oluşturur. Yeni indeks için `app:products:index --activate` kullanın; bütün aktarım başarılıysa alias atomik olarak yeni indekse geçer. Eski indeks silinmez. Model değişiminde Python ve Symfony embedding sürümlerini birlikte güncelleyin; eski modelle sorgulama ve yeni modelle indeksleme için tek model süreci yeterli olmadığından bu PoC'de model değişimi sırasında bakım penceresi gerekir.
+```bash
+docker compose exec -T search-api php bin/console app:products:reindex
+```
+
+Eski indeks korunur. Komut başarısız olursa alias eski indekste kalır. Bu model değişimi embedding API'sini yeni modelle başlatır; yeniden indeksleme tamamlanana kadar eski model vektörleriyle arama yapılamaz. Yeni modelin Türkçe ürün aramalarında daha iyi sıralama vereceği garanti değildir; `ütü`, `ütü masası`, `ütü tabanlığı`, `iPhone 17 Pro Max` ve `iPhone 17 Pro Max kılıfı` sonuçlarını karşılaştırın.
 
 ## Yedekleme
 
@@ -231,7 +235,7 @@ php bin/console app:products:index-v2 --batch-size=8
 ```
 
 Komut `ELASTICSEARCH_INDEX` fiziksel indeksindeki **mevcut Elasticsearch dokümanlarını** tarar; PostgreSQL'den ürün
-kopyalamaz. Mapping'e `semantic.v2.name.vector`, `semantic.v2.category.vector`, `semantic.v2.brand.vector` (384 boyut)
+kopyalamaz. Mapping'e `semantic.v2.name.vector`, `semantic.v2.category.vector`, `semantic.v2.brand.vector` (seçili model boyutu)
 ekler. Kaynak ürün alanlarını, v1 vektörünü ve dış sürüm numarasını korur; alias değiştirmez. Arama aliasının bu indeksi
 gösteriyor olması gerekir. Kategori vektörü sıralı kategori yolu ve yaprak kategori adından üretilir. Analyzer alt
 alanları kullanılmaz. Eksik marka/kategori için vektör üretilmez. Vektör boyutu/modeli v1 ile aynıdır.
