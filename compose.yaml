@@ -20,6 +20,7 @@ services:
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.19.14
+    pull_policy: never
     ports:
       - "${ELASTICSEARCH_BIND_IP:-192.168.1.105}:9200:9200"
     environment:
