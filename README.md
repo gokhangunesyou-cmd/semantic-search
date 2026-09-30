@@ -182,7 +182,7 @@ Python kullanılamazsa arama 503 döner; sessiz metinsel fallback yoktur. Yeni e
 
 ## Model değiştirip yeniden indeksleme
 
-`.env` veya Coolify değişkenlerinde `EMBEDDING_MODEL=Trendyol/TY-ecomm-embed-multilingual-base-v1.2.0` seçin. İsteğe bağlı olarak kartta sabitlenen `EMBEDDING_REVISION=760f1827952873f02336a797c6f8ad8bc9789778` değerini de verin. Kod ve Compose değişikliği deploy edildikten, servisler hazır olduktan sonra şu tek komut dosyayı DB'ye alır, yeni fiziksel indeksi modelin vektör boyutuyla kurar, bütün ürün vektörlerini yeniden üretir ve işlem başarılıysa arama aliasını yeni indekse taşır:
+`.env` veya Coolify değişkenlerinde `EMBEDDING_MODEL=Trendyol/TY-ecomm-embed-multilingual-base-v1.2.0` seçin. Bu bilinen modelin sabit revision'ı `00c030c9a56bff9403f95c1b45f4b82e669e243c` değeridir; `EMBEDDING_REVISION` yalnızca özel model seçerken kullanılır. Kod ve Compose değişikliği deploy edildikten, servisler hazır olduktan sonra şu tek komut dosyayı DB'ye alır, yeni fiziksel indeksi modelin vektör boyutuyla kurar, bütün ürün vektörlerini yeniden üretir ve işlem başarılıysa arama aliasını yeni indekse taşır:
 
 ```bash
 docker compose exec -T search-api php bin/console app:products:reindex

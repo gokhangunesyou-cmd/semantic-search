@@ -13,10 +13,12 @@ final class Embeddings
     public function version(): string
     {
         $model = getenv('EMBEDDING_MODEL') ?: 'intfloat/multilingual-e5-small';
-        $revision = getenv('EMBEDDING_REVISION') ?: match ($model) {
+        $revision = match ($model) {
             'intfloat/multilingual-e5-small' => '614241f622f53c4eeff9890bdc4f31cfecc418b3',
-            'Trendyol/TY-ecomm-embed-multilingual-base-v1.2.0' => '760f1827952873f02336a797c6f8ad8bc9789778',
-            default => throw new \RuntimeException('Özel EMBEDDING_MODEL için EMBEDDING_REVISION sabitlenmeli.')
+            'Trendyol/TY-ecomm-embed-multilingual-base-v1.2.0' => '00c030c9a56bff9403f95c1b45f4b82e669e243c',
+            default => getenv('EMBEDDING_REVISION') ?: throw new \RuntimeException(
+                'Özel EMBEDDING_MODEL için EMBEDDING_REVISION sabitlenmeli.'
+            )
         };
         $modelFile = getenv('MODEL_FILE') ?: 'onnx/model.onnx';
         if ($model === 'intfloat/multilingual-e5-small' &&

@@ -4,7 +4,7 @@ from pathlib import Path
 E5_MODEL = 'intfloat/multilingual-e5-small'
 E5_REVISION = '614241f622f53c4eeff9890bdc4f31cfecc418b3'
 TRENDYOL_MODEL = 'Trendyol/TY-ecomm-embed-multilingual-base-v1.2.0'
-TRENDYOL_REVISION = '760f1827952873f02336a797c6f8ad8bc9789778'
+TRENDYOL_REVISION = '00c030c9a56bff9403f95c1b45f4b82e669e243c'
 
 
 def model_id():
@@ -12,14 +12,14 @@ def model_id():
 
 
 def model_revision():
-    configured = os.getenv('EMBEDDING_REVISION', '').strip()
-    if configured:
-        return configured
     selected = model_id()
     if selected == E5_MODEL:
         return E5_REVISION
     if selected == TRENDYOL_MODEL:
         return TRENDYOL_REVISION
+    configured = os.getenv('EMBEDDING_REVISION', '').strip()
+    if configured:
+        return configured
     raise RuntimeError('Custom EMBEDDING_MODEL requires a pinned EMBEDDING_REVISION.')
 
 
