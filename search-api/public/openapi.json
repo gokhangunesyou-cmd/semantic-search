@@ -1055,7 +1055,7 @@
             "example": "11,12"
           }
         ],
-        "description": "script_score ana vektör benzerlik skorunu ve alan boost’larını hesaplar; function_score sonucu category.categoryFactor ile çarpar (alan yoksa 1). Sabit aday sınırı ve kNN ön seçimi yoktur; limit yalnızca döndürülecek ürün sayısıdır. Filtreye uyan, ana vektörlü bütün ürünler puanlanır. Eksik boost alanlarının katkısı 0. Alan vektörleri app:products:index-v2 ile hazırlanır. Arama sırasında mapping veya sürüm kontrolü yapılmaz. Büyük kataloglarda yaklaşık kNN aramasından daha maliyetlidir."
+        "description": "script_score ana vektör benzerlik skorunu ve ad, kategori, marka vektör katkılarını hesaplar; category.categoryFactor sıralamada kullanılmaz. Sabit aday sınırı ve kNN ön seçimi yoktur; limit yalnızca döndürülecek ürün sayısıdır. Filtreye uyan, ana vektörlü bütün ürünler puanlanır. Eksik alan vektörlerinin katkısı 0. Alan vektörleri app:products:index-v2 ile hazırlanır. Arama sırasında mapping veya sürüm kontrolü yapılmaz. Büyük kataloglarda yaklaşık kNN aramasından daha maliyetlidir."
       }
     }
   },

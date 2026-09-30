@@ -30,8 +30,7 @@ final class SearchV2Test extends TestCase
             self::assertArrayNotHasKey('knn', $body);
             self::assertSame(2, $body['size']);
             self::assertTrue($body['_source']);
-            $scoring = $body['query']['function_score'];
-            $vectorScoring = $scoring['query']['script_score'];
+            $vectorScoring = $body['query']['script_score'];
             $filters = $vectorScoring['query']['bool']['filter'];
             self::assertCount(3, $filters);
             self::assertSame(['term' => ['brand.id' => '7']], $filters[0]);
@@ -46,10 +45,7 @@ final class SearchV2Test extends TestCase
             foreach (array_keys(ProductVectorQuery::WEIGHTS) as $field) {
                 self::assertStringContainsString("semantic.v2.$field.vector", $vectorScoring['script']['source']);
             }
-            self::assertSame('replace', $scoring['boost_mode']);
-            self::assertStringContainsString(
-                "return _score * factor;", $scoring['functions'][0]['script_score']['script']['source']
-            );
+            self::assertStringNotContainsString('categoryFactor', $vectorScoring['script']['source']);
             return new MockResponse(json_encode(['hits' => ['hits' => [[
                 '_id' => 'phone', '_score' => 0.9,
                 '_source' => ['id' => 'phone', 'empty' => new \stdClass(), 'list' => [],
