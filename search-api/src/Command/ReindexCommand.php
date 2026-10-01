@@ -70,11 +70,19 @@ final class ReindexCommand extends Command
         $indexCommand = $application->find('app:products:index');
         $result = $indexCommand->run(new ArrayInput([
             '--batch-size' => $input->getOption('batch-size'),
-            '--activate' => true,
+            '--index' => $index,
         ]), $output);
         if ($result !== Command::SUCCESS) {
             $output->writeln('İndeksleme tamamlanmadı; arama aliası eski indekste bırakıldı.');
+            return $result;
         }
+
+        $this->elastic->activate(true);
+        $aliases = $this->elastic->request('GET', '_alias/'.rawurlencode($this->elastic->alias()));
+        if (!isset($aliases[$index])) {
+            throw new \RuntimeException('Yeni indeks hazırlandı fakat arama aliası yeni indekse geçmedi.');
+        }
+        $output->writeln('Arama aliası güncellendi: '.$this->elastic->alias().' → '.$index);
         return $result;
     }
 }

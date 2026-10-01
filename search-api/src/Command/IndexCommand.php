@@ -15,10 +15,14 @@ final class IndexCommand extends Command
     protected function configure(): void
     {
         $this->addOption('batch-size', null, InputOption::VALUE_REQUIRED, '1–8 arası', '8');
+        $this->addOption(
+            'index', null, InputOption::VALUE_REQUIRED, 'İndeks hedefi; verilmezse ELASTICSEARCH_INDEX kullanılır.'
+        );
         $this->addOption('activate', null, InputOption::VALUE_NONE, 'Başarılı aktarım sonrası arama aliasını bu indekse geçirir.');
     }
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        if ($index = $input->getOption('index')) $this->elastic->useIndex($index);
         $batchSize = filter_var($input->getOption('batch-size'), FILTER_VALIDATE_INT);
         if (!$batchSize || $batchSize > 8 || $batchSize < 1) throw new \InvalidArgumentException('batch-size 1–8 olmalı.');
         // A session-level advisory lock prevents two manual indexers racing.
