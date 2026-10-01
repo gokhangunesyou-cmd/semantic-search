@@ -238,8 +238,13 @@ Yerel sonuçların kapsamı ve sınırları `docs/VERIFICATION.md` dosyasında k
 vektörleriyle sıralar. `page` 1'den başlar; `limit` 1–50 aralığındadır ve `page × limit` en fazla 10000 olabilir.
 `weight_semantic`, `weight_name`, `weight_category`, `weight_brand` 0–10 arası sayılardır. Varsayılanlar sırasıyla
 1, 0.4, 0.5, 0.1'dir. Yanıt `page`, `limit`, `total`, `pages`, `count`, `weights` ve her ürün için `explain` içerir.
+`include_document_score=1` ile `documentScore` çarpanı açılır; varsayılan `0` yalnızca vektör skorunu kullanır.
+`document_score_max_multiplier` 1–10 arasıdır ve varsayılanı 1.2'dir. Çarpan
+`1 + (max_multiplier - 1) × min(1, ln(1 + max(0, documentScore)) / ln(201))` formülüyle hesaplanır.
+Eksik veya 0 `documentScore` çarpanı 1 bırakır; 200 ve üstü azami çarpana ulaşır.
 `explain.components` alan başına cosine benzerliğini, 0–1'e dönüştürülmüş benzerliği, ağırlığı ve katkıyı gösterir;
-`calculated_total` katkıların toplamı, `elasticsearch_score` gerçek `_score` değeridir. Float32 yuvarlaması nedeniyle
+`base_total` vektör katkılarının toplamı, `document_multiplier` uygulanan çarpan,
+`calculated_total` çarpımın sonucu, `elasticsearch_score` gerçek `_score` değeridir. Float32 yuvarlaması nedeniyle
 çok küçük farklar olabilir. Yalnızca `mode=semantic` desteklenir. Swagger `/docs` içinde v2 de yer alır.
 
 Coolify deploy sonrasında **search-api** servisinin terminalinde:
@@ -270,6 +275,7 @@ Son puan: `1.0 × ana vektör + 0.4 × ad + 0.5 × kategori + 0.1 × marka`.
 Her benzerlik `(cosine + 1) / 2` ölçeğindedir. Ana vektörü olmayan kayıtlar dahil edilmez; eksik v2 alanının
 boost'u sıfırdır. `constant_score` kullanılmaz; ana vektörün benzerlik farkları korunur. Katsayılar
 `ProductVectorQuery::DEFAULT_WEIGHTS` içinde tanımlıdır. Varsayılan toplam skor 0–2 aralığındadır, olasılık değildir.
+`documentScore` açılırsa bu toplam, seçilen azami çarpanla en fazla o oranda artırılır.
 Vektörler ürün verisiyle birlikte yanıtta bulunur; `version` ve kullanılan `weights` döner.
 
 Bu yöntem filtreye uyan ve ana vektörü bulunan bütün ürünlerde benzerlik hesaplar. V1'in yaklaşık kNN aramasına

@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Ürün arama</title>
   <link rel="stylesheet" href="/assets/catalog.css">
-  <script src="/assets/catalog.js?v=3" defer></script>
+  <script src="/assets/catalog.js?v=4" defer></script>
 </head>
 
 <body>
@@ -50,6 +50,18 @@
           <input id="weight-brand" name="weight_brand" type="number" min="0" max="10" step="any"
             value="0.1" required>
         </label>
+      </fieldset>
+      <fieldset class="document-score-options">
+        <legend>DocumentScore etkisi</legend>
+        <label class="document-score-toggle" for="include-document-score">
+          <input id="include-document-score" name="include_document_score" type="checkbox" value="1">
+          Relevance × documentScore çarpanı
+        </label>
+        <label for="document-score-max-multiplier">Azami çarpan
+          <input id="document-score-max-multiplier" name="document_score_max_multiplier" type="number"
+            min="1" max="10" step="0.01" value="1.20" disabled required>
+        </label>
+        <p>200 ve üzeri documentScore azami çarpana ulaşır. 1.20 en fazla %20 artış demektir.</p>
       </fieldset>
     </form>
     <section class="results" aria-labelledby="results-title" aria-busy="false">

@@ -7,6 +7,8 @@ final class QueryBuilder
 {
     private array $vector = [];
     private array $weights = ProductVectorQuery::DEFAULT_WEIGHTS;
+    private bool $includeDocumentScore = false;
+    private float $documentScoreMaxMultiplier = ProductVectorQuery::DEFAULT_DOCUMENT_SCORE_MAX_MULTIPLIER;
     private int $size = 10;
     private int $page = 1;
     private array|bool $source = true;
@@ -26,6 +28,14 @@ final class QueryBuilder
     {
         $builder = clone $this;
         $builder->vector = $vector;
+        return $builder;
+    }
+
+    public function documentScore(bool $include, float $maxMultiplier): self
+    {
+        $builder = clone $this;
+        $builder->includeDocumentScore = $include;
+        $builder->documentScoreMaxMultiplier = $maxMultiplier;
         return $builder;
     }
 
@@ -57,7 +67,9 @@ final class QueryBuilder
             'size' => $this->size,
             'track_total_hits' => true,
             '_source' => $this->source,
-            'query' => $this->vectorQuery->scoring($this->vector, $this->weights)
+            'query' => $this->vectorQuery->scoring(
+                $this->vector, $this->weights, $this->includeDocumentScore, $this->documentScoreMaxMultiplier
+            )
         ];
     }
 }

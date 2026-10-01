@@ -10,7 +10,9 @@ final readonly class SearchInput
         public string $query,
         public int $limit,
         public int $page,
-        public array $weights
+        public array $weights,
+        public bool $includeDocumentScore,
+        public float $documentScoreMaxMultiplier
     )
     {
     }
@@ -43,7 +45,18 @@ final readonly class SearchInput
             }
             $weights[$field] = (float)$value;
         }
-        return new self($query, $limit, $page, $weights);
+        $includeDocumentScore = $input['include_document_score'] ?? '0';
+        if (!in_array($includeDocumentScore, ['0', '1', 0, 1], true)) {
+            throw new \InvalidArgumentException('include_document_score 0 veya 1 olmalı.');
+        }
+        $maxMultiplier = $input['document_score_max_multiplier'] ??
+            ProductVectorQuery::DEFAULT_DOCUMENT_SCORE_MAX_MULTIPLIER;
+        if ((!is_string($maxMultiplier) && !is_int($maxMultiplier) && !is_float($maxMultiplier)) ||
+            !is_numeric($maxMultiplier) || !is_finite((float)$maxMultiplier) ||
+            (float)$maxMultiplier < 1 || (float)$maxMultiplier > 10) {
+            throw new \InvalidArgumentException('document_score_max_multiplier 1–10 arasında sayı olmalı.');
+        }
+        return new self($query, $limit, $page, $weights, (bool)$includeDocumentScore, (float)$maxMultiplier);
     }
 
     private static function integer(mixed $value, string $name): int

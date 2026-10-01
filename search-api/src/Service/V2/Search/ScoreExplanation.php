@@ -2,13 +2,17 @@
 
 namespace App\Service\V2\Search;
 
+use App\Service\V2\Search\QueryBuilder\ProductVectorQuery;
+
 final class ScoreExplanation
 {
     public static function fromSource(
         array|\stdClass $source,
         array $queryVector,
         array $weights,
-        float $elasticScore
+        float $elasticScore,
+        bool $includeDocumentScore,
+        float $maxMultiplier
     ): array
     {
         $vectors = [
@@ -31,9 +35,21 @@ final class ScoreExplanation
             ];
             $total += $contribution;
         }
+        $baseTotal = max(0.0, $total);
+        $documentScore = self::value($source, ['documentScore']);
+        $documentScore = is_numeric($documentScore) ? (float)$documentScore : null;
+        $multiplier = 1.0;
+        if ($includeDocumentScore && $documentScore !== null) {
+            $ratio = min(1.0, log(1.0 + max(0.0, $documentScore)) /
+                log(1.0 + ProductVectorQuery::DOCUMENT_SCORE_SATURATION));
+            $multiplier += ($maxMultiplier - 1.0) * $ratio;
+        }
         return [
             'components' => $components,
-            'calculated_total' => max(0.0, $total),
+            'base_total' => $baseTotal,
+            'document_score' => $documentScore,
+            'document_multiplier' => $multiplier,
+            'calculated_total' => $baseTotal * $multiplier,
             'elasticsearch_score' => $elasticScore
         ];
     }

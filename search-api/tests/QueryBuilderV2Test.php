@@ -34,5 +34,17 @@ final class QueryBuilderV2Test extends TestCase
             [0, 1], $nextRequest['query']['script_score']['script']['params']['vector']
         );
         self::assertSame(0.5, $nextRequest['query']['script_score']['script']['params']['category']);
+        self::assertStringNotContainsString('documentScore', $nextRequest['query']['script_score']['script']['source']);
+        $boosted = $prototype->vector([1])->documentScore(true, 1.5)->build();
+        self::assertStringContainsString('doc[\'documentScore\']', $boosted['query']['script_score']['script']['source']);
+        self::assertSame(
+            1.5, $boosted['query']['script_score']['script']['params']['documentScoreMaxMultiplier']
+        );
+        self::assertEqualsWithDelta(
+            log(201.0), $boosted['query']['script_score']['script']['params']['documentScoreLogDenominator'], 0.000001
+        );
+        self::assertStringNotContainsString(
+            'documentScore', $prototype->vector([1])->build()['query']['script_score']['script']['source']
+        );
     }
 }

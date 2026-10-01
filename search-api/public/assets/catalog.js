@@ -5,6 +5,8 @@ const limit = document.querySelector('#limit');
 const weightInputs = Object.fromEntries(
   ['semantic', 'name', 'category', 'brand'].map(field => [field, document.querySelector(`#weight-${field}`)])
 );
+const includeDocumentScore = document.querySelector('#include-document-score');
+const documentScoreMaxMultiplier = document.querySelector('#document-score-max-multiplier');
 const products = document.querySelector('#products');
 const status = document.querySelector('#status');
 const meta = document.querySelector('#result-meta');
@@ -21,6 +23,10 @@ const defaultWeights = { semantic: '1', name: '0.4', category: '0.5', brand: '0.
 let activeRequest;
 let responseData;
 let currentPage = 1;
+
+function updateDocumentScoreInput() {
+  documentScoreMaxMultiplier.disabled = !includeDocumentScore.checked;
+}
 
 function showData(title, data) {
   dataTitle.textContent = title;
@@ -132,6 +138,10 @@ async function search(page = 1, updateUrl = true) {
   for (const [field, input] of Object.entries(weightInputs)) {
     params.set(`weight_${field}`, input.value);
   }
+  params.set('include_document_score', includeDocumentScore.checked ? '1' : '0');
+  if (includeDocumentScore.checked) {
+    params.set('document_score_max_multiplier', documentScoreMaxMultiplier.value);
+  }
   if (updateUrl) {
     const url = new URL(window.location.href);
     url.search = params.toString();
@@ -195,6 +205,7 @@ previousPage.addEventListener('click', () => search(currentPage - 1));
 nextPage.addEventListener('click', () => search(currentPage + 1));
 
 query.addEventListener('input', () => query.setCustomValidity(''));
+includeDocumentScore.addEventListener('change', updateDocumentScoreInput);
 
 function restoreFromUrl() {
   activeRequest?.abort();
@@ -209,6 +220,12 @@ function restoreFromUrl() {
       Number(value) >= 0 && Number(value) <= 10
       ? value : defaultWeights[field];
   }
+  includeDocumentScore.checked = params.get('include_document_score') === '1';
+  const maxMultiplier = params.get('document_score_max_multiplier');
+  documentScoreMaxMultiplier.value = maxMultiplier !== null && maxMultiplier !== '' &&
+    Number.isFinite(Number(maxMultiplier)) && Number(maxMultiplier) >= 1 && Number(maxMultiplier) <= 10
+    ? maxMultiplier : '1.20';
+  updateDocumentScoreInput();
   const page = Number(params.get('page') ?? '1');
   currentPage = Number.isInteger(page) && page > 0 ? page : 1;
   products.replaceChildren();

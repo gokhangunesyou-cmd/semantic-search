@@ -22,6 +22,7 @@ final class ElasticSearchService
         $query = $this->queryBuilder
             ->vector($vector)
             ->weights($input->weights)
+            ->documentScore($input->includeDocumentScore, $input->documentScoreMaxMultiplier)
             ->size($input->limit)
             ->page($input->page)
             ->build();
@@ -46,6 +47,10 @@ final class ElasticSearchService
             'mode' => 'semantic',
             'version' => 'v2',
             'weights' => $input->weights,
+            'document_score' => [
+                'enabled' => $input->includeDocumentScore,
+                'max_multiplier' => $input->documentScoreMaxMultiplier
+            ],
             'page' => $input->page,
             'limit' => $input->limit,
             'total' => $total,
@@ -54,7 +59,10 @@ final class ElasticSearchService
             'items' => array_map(static fn($hit) => [
                 'id' => $hit['_id'],
                 'score' => $hit['_score'],
-                'explain' => ScoreExplanation::fromSource($hit['_source'], $vector, $input->weights, $hit['_score']),
+                'explain' => ScoreExplanation::fromSource(
+                    $hit['_source'], $vector, $input->weights, $hit['_score'],
+                    $input->includeDocumentScore, $input->documentScoreMaxMultiplier
+                ),
                 'document' => $hit['_source']
             ], $hits['hits'])
         ];

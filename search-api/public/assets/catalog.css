@@ -111,6 +111,43 @@ input {
     width: 100%;
 }
 
+.document-score-options {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 14px;
+    padding: 12px;
+    border: 1px solid #ddd;
+}
+
+.document-score-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.document-score-toggle input {
+    flex: none;
+    margin: 0;
+}
+
+.document-score-options label:not(.document-score-toggle) {
+    display: grid;
+    gap: 4px;
+}
+
+.document-score-options input[type="number"] {
+    width: 100px;
+}
+
+.document-score-options p {
+    font-size: 12px;
+    flex-basis: 100%;
+    margin: 0;
+    color: #666;
+}
+
 .results {
     margin-top: 28px;
     padding-top: 20px;

@@ -951,6 +951,17 @@
                             }
                           }
                         },
+                        "document_score": {
+                          "type": "object",
+                          "properties": {
+                            "enabled": {
+                              "type": "boolean"
+                            },
+                            "max_multiplier": {
+                              "type": "number"
+                            }
+                          }
+                        },
                         "page": {
                           "type": "integer"
                         },
@@ -1082,9 +1093,32 @@
               "maximum": 10,
               "default": 0.1
             }
+          },
+          {
+            "name": "include_document_score",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [0, 1],
+              "default": 0
+            },
+            "description": "1 ise relevance skoru documentScore çarpanıyla artırılır."
+          },
+          {
+            "name": "document_score_max_multiplier",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 10,
+              "default": 1.2
+            },
+            "description": "documentScore 200 ve üzerindeyken ulaşılan azami çarpan."
           }
         ],
-        "description": "Ağırlıklı vektör skorları sayfalanır. Alan katkıları items[].explain içinde gösterilir."
+        "description": "Ağırlıklı vektör skorları sayfalanır. İsteğe bağlı documentScore çarpanı explain içinde gösterilir."
       }
     }
   },
