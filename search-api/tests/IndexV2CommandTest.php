@@ -25,6 +25,9 @@ final class IndexV2CommandTest extends TestCase
                 'embedding_version' => 'e5-small-onnx-fp32-v1', 'text_version' => DocumentText::VERSION,
             ]]]]));
             if (str_ends_with($url, '/_mapping') || str_ends_with($url, '/_refresh')) return new MockResponse('{}');
+            if (str_ends_with($url, '/health/ready')) return new MockResponse(json_encode([
+                'model_version' => 'e5-small-onnx-fp32-v1', 'dimensions' => 384
+            ]));
             if (str_contains($url, '_search?scroll=')) return new MockResponse(json_encode(['_scroll_id' => 'test-scroll', 'hits' => ['hits' => [
                 ['_id' => 'a', '_version' => 7, '_routing' => 'route-a', '_source' => ['id' => 'a', 'variants' => [['name' => 'Telefon']], 'empty' => new \stdClass(), 'list' => []]],
                 ['_id' => 'b', '_version' => 9, '_source' => ['id' => 'b', 'variants' => [['name' => 'Kitap']]]],

@@ -91,6 +91,26 @@ input {
     margin-left: 4px;
 }
 
+.weights {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 14px;
+    padding: 12px;
+    border: 1px solid #ddd;
+}
+
+.weights label {
+    display: grid;
+    gap: 4px;
+    flex: 1 1 190px;
+    font-size: 12px;
+}
+
+.weights input {
+    width: 100%;
+}
+
 .results {
     margin-top: 28px;
     padding-top: 20px;
@@ -168,6 +188,12 @@ input {
     font-family: monospace;
 }
 
+.card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
 .vector-texts {
     margin-top: 12px;
 }
@@ -179,6 +205,18 @@ input {
 
 .vector-text {
     white-space: pre-wrap;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.pagination[hidden] {
+    display: none;
 }
 
 dialog {

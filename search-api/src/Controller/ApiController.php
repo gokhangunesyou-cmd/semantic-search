@@ -56,13 +56,6 @@ final class ApiController
                 if ($limit === false) throw new \InvalidArgumentException('limit tam sayı olmalı (1–50).');
                 $input['limit'] = $limit;
             }
-            $filters = [];
-            if (isset($input['brand_id'])) $filters['brand_id'] = $input['brand_id'];
-            if (isset($input['category_ids'])) {
-                $categories = $input['category_ids'];
-                $filters['category_ids'] = is_string($categories) ? explode(',', $categories) : $categories;
-            }
-            $input['filters'] = $filters;
             return new JsonResponse($this->search->find($input));
         });
     }

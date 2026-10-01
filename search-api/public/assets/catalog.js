@@ -2,6 +2,9 @@
 const form = document.querySelector('#search-form');
 const query = document.querySelector('#query');
 const limit = document.querySelector('#limit');
+const weightInputs = Object.fromEntries(
+  ['semantic', 'name', 'category', 'brand'].map(field => [field, document.querySelector(`#weight-${field}`)])
+);
 const products = document.querySelector('#products');
 const status = document.querySelector('#status');
 const meta = document.querySelector('#result-meta');
@@ -10,8 +13,14 @@ const responseButton = document.querySelector('#response-button');
 const dataDialog = document.querySelector('#data-dialog');
 const dataTitle = document.querySelector('#data-title');
 const dataContent = document.querySelector('#data-content');
+const pagination = document.querySelector('#pagination');
+const previousPage = document.querySelector('#previous-page');
+const nextPage = document.querySelector('#next-page');
+const pageLabel = document.querySelector('#page-label');
+const defaultWeights = { semantic: '1', name: '0.4', category: '0.5', brand: '0.1' };
 let activeRequest;
 let responseData;
+let currentPage = 1;
 
 function showData(title, data) {
   dataTitle.textContent = title;
@@ -36,7 +45,7 @@ function showStatus(title, detail, error = false) {
   status.hidden = false;
 }
 
-function productCard(item, index) {
+function productCard(item, index, rankOffset) {
   const doc = item.document ?? {};
   const variants = Array.isArray(doc.variants) ? doc.variants : [];
   const variant = variants.find(v => String(v.id) === String(item.id)) ?? variants[0] ?? doc;
@@ -61,7 +70,7 @@ function productCard(item, index) {
       }
     } catch { /* Invalid image URLs use the placeholder. */ }
   }
-  picture.append(element('span', 'rank', `#${index + 1}`));
+  picture.append(element('span', 'rank', `#${rankOffset + index + 1}`));
   const body = element('div', 'card-body');
   body.append(
     element('p', 'brand', doc.brand?.name ?? variant.brandName ?? 'Marka belirtilmemiş'),
@@ -82,6 +91,11 @@ function productCard(item, index) {
   const dataButton = element('button', '', 'Ürün verisi');
   dataButton.type = 'button';
   dataButton.addEventListener('click', () => showData(`Ürün ${item.id} · API verisi`, item));
+  const explainButton = element('button', '', 'Explain');
+  explainButton.type = 'button';
+  explainButton.addEventListener('click', () => showData(`Ürün ${item.id} · skor açıklaması`, item.explain));
+  const actions = element('div', 'card-actions');
+  actions.append(dataButton, explainButton);
   const vectorTexts = element('details', 'vector-texts');
   vectorTexts.append(element('summary', '', 'Vektör metinleri'));
   const texts = [
@@ -97,14 +111,15 @@ function productCard(item, index) {
     vectorTexts.append(element('strong', '', label), element('p', 'vector-text', text));
   }
   if (!hasText) vectorTexts.append(element('p', '', 'Vektör metni mevcut değil.'));
-  body.append(score, dataButton, vectorTexts);
+  body.append(score, actions, vectorTexts);
   card.append(picture, body);
   return card;
 }
 
-async function search(updateUrl = true) {
+async function search(page = 1, updateUrl = true) {
   const term = query.value.trim();
   query.setCustomValidity('');
+  if (!form.reportValidity()) return;
   if (!term || new TextEncoder().encode(term).length > 2000) {
     query.setCustomValidity(!term ? 'Lütfen bir arama yazın.' : 'Arama metni çok uzun; lütfen kısaltın.');
     query.reportValidity();
@@ -113,10 +128,13 @@ async function search(updateUrl = true) {
   activeRequest?.abort();
   const request = new AbortController();
   activeRequest = request;
-  const params = new URLSearchParams({ query: term, limit: limit.value });
+  const params = new URLSearchParams({ query: term, limit: limit.value, page: String(page) });
+  for (const [field, input] of Object.entries(weightInputs)) {
+    params.set(`weight_${field}`, input.value);
+  }
   if (updateUrl) {
     const url = new URL(window.location.href);
-    params.forEach((value, key) => url.searchParams.set(key, value));
+    url.search = params.toString();
     if (url.href !== window.location.href) window.history.pushState(null, '', url);
   }
   const started = performance.now();
@@ -126,6 +144,7 @@ async function search(updateUrl = true) {
   meta.textContent = '';
   responseData = undefined;
   responseButton.disabled = true;
+  pagination.hidden = true;
   showStatus('Aranıyor…');
   try {
     const response = await fetch(`/api/v2/search?${params}`, {
@@ -137,16 +156,23 @@ async function search(updateUrl = true) {
     if (!data || !Array.isArray(data.items)) throw new Error('Arama yanıtı okunamadı. Lütfen tekrar deneyin.');
     if (activeRequest !== request) return;
     responseData = data;
+    currentPage = data.page;
     responseButton.disabled = false;
     const fragment = document.createDocumentFragment();
-    data.items.forEach((item, index) => fragment.append(productCard(item, index)));
+    const rankOffset = (data.page - 1) * data.limit;
+    data.items.forEach((item, index) => fragment.append(productCard(item, index, rankOffset)));
     products.replaceChildren(fragment);
     const elapsed = ((performance.now() - started) / 1000).toLocaleString('tr-TR', { maximumFractionDigits: 2 });
-    meta.textContent = `${data.items.length} ürün · ${elapsed} sn`;
+    meta.textContent = `${data.total} üründen ${data.items.length} ürün · ${elapsed} sn`;
+    pagination.hidden = data.pages <= 1 && data.page === 1;
+    previousPage.disabled = data.page <= 1;
+    nextPage.disabled = data.page >= data.pages;
+    pageLabel.textContent = `Sayfa ${data.page} / ${Math.max(1, data.pages)}`;
     if (data.items.length) {
       status.hidden = true;
     } else {
-      showStatus('Sonuç bulunamadı.', 'Farklı bir arama deneyin.');
+      showStatus(data.total ? 'Bu sayfada ürün yok.' : 'Sonuç bulunamadı.',
+        data.total ? 'Önceki sayfaya dönün.' : 'Farklı bir arama deneyin.');
     }
   } catch (error) {
     if (activeRequest !== request) return;
@@ -162,8 +188,11 @@ async function search(updateUrl = true) {
 
 form.addEventListener('submit', event => {
   event.preventDefault();
-  search();
+  search(1);
 });
+
+previousPage.addEventListener('click', () => search(currentPage - 1));
+nextPage.addEventListener('click', () => search(currentPage + 1));
 
 query.addEventListener('input', () => query.setCustomValidity(''));
 
@@ -173,15 +202,24 @@ function restoreFromUrl() {
   const params = new URLSearchParams(window.location.search);
   query.value = params.get('query') ?? '';
   query.setCustomValidity('');
-  limit.value = ['12', '24', '50'].includes(params.get('limit')) ? params.get('limit') : '12';
+  limit.value = ['5', '12', '24', '50'].includes(params.get('limit')) ? params.get('limit') : '12';
+  for (const [field, input] of Object.entries(weightInputs)) {
+    const value = params.get(`weight_${field}`);
+    input.value = value !== null && value !== '' && Number.isFinite(Number(value)) &&
+      Number(value) >= 0 && Number(value) <= 10
+      ? value : defaultWeights[field];
+  }
+  const page = Number(params.get('page') ?? '1');
+  currentPage = Number.isInteger(page) && page > 0 ? page : 1;
   products.replaceChildren();
   meta.textContent = '';
   responseData = undefined;
   responseButton.disabled = true;
+  pagination.hidden = true;
   results.setAttribute('aria-busy', 'false');
   dataDialog.close();
   showStatus('Ürünleri görmek için arama yapın.');
-  if (query.value.trim()) search(false);
+  if (query.value.trim()) search(currentPage, false);
 }
 
 window.addEventListener('popstate', restoreFromUrl);

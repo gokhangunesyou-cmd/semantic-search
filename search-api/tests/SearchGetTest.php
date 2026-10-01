@@ -28,12 +28,11 @@ final class SearchGetTest extends TestCase
                 ]));
             }
             self::assertSame(3, $body['size']);
-            self::assertSame(['term' => ['brand.id' => '20048005']], $body['knn']['filter']['bool']['filter'][0]);
-            self::assertSame(['11', '12'], $body['knn']['filter']['bool']['filter'][1]['bool']['should'][0]['terms']['category.id']);
+            self::assertArrayNotHasKey('filter', $body['knn']);
             return new MockResponse('{"hits":{"hits":[]}}');
         }, 'http://localhost');
         $controller = $this->controller($http);
-        $result = $controller->search(Request::create('/api/search?query=bebek%20arabası%20%26%20puset&limit=3&brand_id=20048005&category_ids=11,12'));
+        $result = $controller->search(Request::create('/api/search?query=bebek%20arabası%20%26%20puset&limit=3'));
         self::assertSame(200, $result->getStatusCode());
         self::assertSame(3, $http->getRequestsCount());
     }
@@ -44,38 +43,42 @@ final class SearchGetTest extends TestCase
             'name' => ['text' => 'Telefon adı', 'vector' => [0, 1]]
         ]];
         $mode = 'semantic';
-            $http = new MockHttpClient(function ($method, $url, $options) use ($semantic) {
-                if (str_ends_with($url, '/_mapping')) {
-                    return new MockResponse(json_encode(['products' => ['mappings' => ['_meta' => [
-                        'embedding_version' => (new Embeddings(new MockHttpClient()))->version(),
-                        'text_version' => DocumentText::VERSION
-                    ]]]]));
-                }
-                if (str_ends_with($url, '/v1/embeddings')) {
-                    return new MockResponse(json_encode([
-                        'model_version' => (new Embeddings(new MockHttpClient()))->version(),
-                        'dimensions' => 384, 'items' => [['embedding' => [1, ...array_fill(0, 383, 0)]]]
-                    ]));
-                }
-                $body = json_decode($options['body'], true);
-                self::assertTrue($body['_source']);
-                return new MockResponse(json_encode(['hits' => ['hits' => [[
-                    '_id' => 'phone', '_score' => 0.9, '_source' => ['id' => 'phone', 'semantic' => $semantic]
+        $http = new MockHttpClient(function ($method, $url, $options) use ($semantic) {
+            if (str_ends_with($url, '/_mapping')) {
+                return new MockResponse(json_encode(['products' => ['mappings' => ['_meta' => [
+                    'embedding_version' => (new Embeddings(new MockHttpClient()))->version(),
+                    'text_version' => DocumentText::VERSION
                 ]]]]));
-            }, 'http://localhost');
-            $response = $this->controller($http)->search(Request::create('/api/search?query=telefon&mode=' . $mode));
-            self::assertSame(200, $response->getStatusCode());
-            $body = json_decode($response->getContent(), true);
-            self::assertSame($semantic, $body['items'][0]['document']['semantic']);
-            self::assertSame(3, $http->getRequestsCount());
-        }
+            }
+            if (str_ends_with($url, '/v1/embeddings')) {
+                return new MockResponse(json_encode([
+                    'model_version' => (new Embeddings(new MockHttpClient()))->version(),
+                    'dimensions' => 384, 'items' => [['embedding' => [1, ...array_fill(0, 383, 0)]]]
+                ]));
+            }
+            $body = json_decode($options['body'], true);
+            self::assertTrue($body['_source']);
+            return new MockResponse(json_encode(['hits' => ['hits' => [[
+                '_id' => 'phone', '_score' => 0.9, '_source' => ['id' => 'phone', 'semantic' => $semantic]
+            ]]]]));
+        }, 'http://localhost');
+        $response = $this->controller($http)->search(Request::create('/api/search?query=telefon&mode=' . $mode));
+        self::assertSame(200, $response->getStatusCode());
+        $body = json_decode($response->getContent(), true);
+        self::assertSame($semantic, $body['items'][0]['document']['semantic']);
+        self::assertSame(3, $http->getRequestsCount());
     }
 
     public function testInvalidBrowserInputReturns400WithoutCallingServices(): void
     {
         $http = new MockHttpClient();
         $controller = $this->controller($http);
-        foreach (['', '?query=x&limit=abc', '?query=x&limit=1.5', '?query=x&limit=0', '?query=x&limit=51', '?query[]=x', '?query=x&mode=unsupported', '?query=x&mode=bad'] as $query) {
+        $queries = [
+            '', '?query=x&limit=abc', '?query=x&limit=1.5', '?query=x&limit=0', '?query=x&limit=51',
+            '?query[]=x', '?query=x&mode=unsupported', '?query=x&mode=bad', '?query=x&brand_id=7',
+            '?query=x&category_ids=11'
+        ];
+        foreach ($queries as $query) {
             self::assertSame(400, $controller->search(Request::create('/api/search'.$query))->getStatusCode());
         }
         self::assertSame(0, $http->getRequestsCount());

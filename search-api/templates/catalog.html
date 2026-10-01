@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Ürün arama</title>
   <link rel="stylesheet" href="/assets/catalog.css">
-  <script src="/assets/catalog.js?v=2" defer></script>
+  <script src="/assets/catalog.js?v=3" defer></script>
 </head>
 
 <body>
@@ -23,14 +23,34 @@
         <button type="submit">Ara</button>
       </div>
       <div class="options">
-        <label for="limit">Ürün sayısı
+        <label for="limit">Sayfa başına ürün
           <select id="limit" name="limit">
+            <option value="5">5</option>
             <option value="12">12</option>
             <option value="24">24</option>
             <option value="50">50</option>
           </select>
         </label>
       </div>
+      <fieldset class="weights">
+        <legend>Skor ağırlıkları</legend>
+        <label for="weight-semantic">Ana metin (semantic.text)
+          <input id="weight-semantic" name="weight_semantic" type="number" min="0" max="10" step="any"
+            value="1" required>
+        </label>
+        <label for="weight-name">Ürün adı (semantic.v2.name)
+          <input id="weight-name" name="weight_name" type="number" min="0" max="10" step="any"
+            value="0.4" required>
+        </label>
+        <label for="weight-category">Kategori (semantic.v2.category)
+          <input id="weight-category" name="weight_category" type="number" min="0" max="10" step="any"
+            value="0.5" required>
+        </label>
+        <label for="weight-brand">Marka (semantic.v2.brand)
+          <input id="weight-brand" name="weight_brand" type="number" min="0" max="10" step="any"
+            value="0.1" required>
+        </label>
+      </fieldset>
     </form>
     <section class="results" aria-labelledby="results-title" aria-busy="false">
       <div class="results-heading">
@@ -41,6 +61,11 @@
       <p class="score-note">Score sıralama puanıdır, yüzde değildir.</p>
       <p id="status" role="status" aria-live="polite">Ürünleri görmek için arama yapın.</p>
       <div id="products"></div>
+      <nav id="pagination" class="pagination" aria-label="Sonuç sayfaları" hidden>
+        <button id="previous-page" type="button">Önceki</button>
+        <span id="page-label"></span>
+        <button id="next-page" type="button">Sonraki</button>
+      </nav>
     </section>
   </main>
   <dialog id="data-dialog" aria-labelledby="data-title">

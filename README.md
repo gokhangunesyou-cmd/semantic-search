@@ -6,11 +6,19 @@
 
 ## Ürün listeleme arayüzü
 
-Search API alan adının kök adresi (`/`) tek sayfalık ürün arama ekranıdır. Arama metnini girip **Ara** düğmesine basın; semantik aramayla 12, 24 ya da 50 sonuç isteyebilirsiniz. Ürün listesi API sırasını korur ve her ürünün `items[].score` değerini yuvarlamadan gösterir. Score yüzde değildir.
+Search API alan adının kök adresi (`/`) ürün arama ekranıdır. Sayfa başına 5, 12, 24 veya 50 sonuç seçilebilir;
+**Önceki** ve **Sonraki** düğmeleri sonraki sonuç sayfalarını getirir. Ana metin, ad, kategori ve marka ağırlıkları
+ekrandan değiştirilebilir. Ürün listesi API sırasını korur ve `items[].score` değerini yuvarlamadan gösterir.
+**Explain** düğmesi her alanın benzerliğini, ağırlığını ve skora katkısını gösterir. Score yüzde değildir.
 
-Satırlar ana ürün ID’sine uyan varyantı, bulunamazsa ilk varyantı gösterir. Görsel, ürün adı, marka, kategori ve seçilen varyantın buybox satıcısının (yoksa ilk satıcının) fiyatı kullanılır. Eksik görsel/fiyat için açıklama gösterilir. Görseller ürün verisindeki HTTP(S) adreslerinden yüklenir. Arama `GET /api/search` üzerinden aynı origin üzerinde yapılır; ayrı frontend servisi veya build adımı gerekmez. Değişiklikler normal Git push → Coolify Deploy akışıyla yayınlanır.
+Satırlar ana ürün ID’sine uyan varyantı, bulunamazsa ilk varyantı gösterir. Görsel, ürün adı, marka, kategori ve seçilen
+varyantın buybox satıcısının (yoksa ilk satıcının) fiyatı kullanılır. Eksik görsel/fiyat için açıklama gösterilir.
+Görseller ürün verisindeki HTTP(S) adreslerinden yüklenir. Arama `GET /api/v2/search` üzerinden aynı origin üzerinde
+yapılır; ayrı frontend servisi veya build adımı gerekmez. Değişiklikler normal Git push → Coolify Deploy akışıyla
+yayınlanır.
 
-Arama metni ve sonuç sayısı URL'de `?query=bebek+arabası&limit=12` biçiminde tutulur.
+Arama metni, sayfa, sayfa boyutu ve ağırlıklar URL'de tutulur;
+örnek: `?query=telefon&limit=12&page=2&weight_category=0.5`.
 URL'deki `query` değiştirilerek veya bağlantı paylaşılarak aynı arama açılabilir; geri/ileri gezinme de desteklenir.
 Her satırdaki **Ürün verisi** butonu ilgili API sonuç nesnesini, **Tüm API yanıtı** butonu mevcut aramanın
 bütün yanıtını JSON olarak açar. Veriler API'nin döndürdüğü tüm alanları içerir; ayrı istek yapılmaz.
@@ -168,13 +176,15 @@ Tarayıcı adres çubuğundan açılabilecek örnekler (kendi Search API adresin
 
 ```text
 /api/search?query=bebek%20arabası&limit=10
-/api/search?query=bebek%20arabası&brand_id=20048005&category_ids=11,12
 /api/embedding/v1/embeddings?kind=query&texts=bebek%20arabası
 ```
 
-Arama parametreleri URL query string üzerinden gönderilir. `brand_id` ve virgülle ayrılmış `category_ids` opsiyoneldir. Embedding için `kind=query|document` ve `texts` gerekir; birden fazla metin için `texts=ilk&texts=ikinci` kullanılır (1–8 metin). Dışarıya açılan arama ve embedding yolları yalnızca GET kabul eder. Uzun dokümanların toplu indekslenmesi için iç embedding servisi POST desteğini korur; bu dahili işlem Swagger'da gösterilmez.
+Arama parametreleri URL query string üzerinden gönderilir. `brand_id` ve `category_ids` desteklenmez. Embedding için
+`kind=query|document` ve `texts` gerekir; birden fazla metin için `texts=ilk&texts=ikinci` kullanılır (1–8 metin).
+Dışarıya açılan arama ve embedding yolları yalnızca GET kabul eder. Uzun dokümanların toplu indekslenmesi için iç
+embedding servisi POST desteğini korur; bu dahili işlem Swagger'da gösterilmez.
 
-Marka ve kategori AND, kategori listesi OR mantığıyla uygulanır. Kategori ağacı nested ise uygun nested query kullanılır. Filtre kNN aday seçimine uygulanır. Arama semantik kNN ile yapılır. Limit 1–50; derin sayfalama yoktur. Skor olasılık değildir.
+V1 araması semantik kNN ile yapılır. Limit 1–50; derin sayfalama yoktur. Skor olasılık değildir.
 
 Yanıt: `mode`, `count`, `items: [{id, score, document}]`. `document`, **orijinal ürünün tüm alanlarını** içerir. Hangi varyantın eşleştiği hesaplanmaz. Stok/fiyat/renk kombinasyon filtreleri bu sürümün API kapsamına dahil değildir; nested mapping ileride bunları doğru kurmak için korunur.
 
@@ -224,9 +234,13 @@ Yerel sonuçların kapsamı ve sınırları `docs/VERIFICATION.md` dosyasında k
 
 ### V2: alan bazlı vektör araması
 
-`GET /api/v2/search?query=telefon&limit=2` ana vektörle ürün bulur; ad, kategori ve marka vektörleriyle sıralar. `brand_id`,
-`category_ids` ve `limit` parametreleri v1 ile aynıdır; yalnızca `mode=semantic` desteklenir. `/api/search` aynı
-davranışı sürdürür. Swagger `/docs` içinde v2 de yer alır.
+`GET /api/v2/search?query=telefon&limit=5&page=2&weight_category=0.5` ana vektörle ürün bulur; ad, kategori ve marka
+vektörleriyle sıralar. `page` 1'den başlar; `limit` 1–50 aralığındadır ve `page × limit` en fazla 10000 olabilir.
+`weight_semantic`, `weight_name`, `weight_category`, `weight_brand` 0–10 arası sayılardır. Varsayılanlar sırasıyla
+1, 0.4, 0.5, 0.1'dir. Yanıt `page`, `limit`, `total`, `pages`, `count`, `weights` ve her ürün için `explain` içerir.
+`explain.components` alan başına cosine benzerliğini, 0–1'e dönüştürülmüş benzerliği, ağırlığı ve katkıyı gösterir;
+`calculated_total` katkıların toplamı, `elasticsearch_score` gerçek `_score` değeridir. Float32 yuvarlaması nedeniyle
+çok küçük farklar olabilir. Yalnızca `mode=semantic` desteklenir. Swagger `/docs` içinde v2 de yer alır.
 
 Coolify deploy sonrasında **search-api** servisinin terminalinde:
 
@@ -250,13 +264,13 @@ güncelleme akışı değildir.
 V2, Elasticsearch `script_score` sorgusunda `semantic.vector` benzerliğini ana skor olarak hesaplar;
 ad, kategori ve marka vektörleri bu skora boost ekler. `category.categoryFactor` sıralamada kullanılmaz.
 Sabit aday havuzu, kNN ön seçimi veya ikinci sorgu yoktur.
-`limit` yalnızca döndürülen ürün sayısını belirler; puanlanan ürün sayısını sınırlamaz.
+`page` ve `limit` döndürülen ürünleri belirler; puanlanan ürün sayısını sınırlamaz.
 
 Son puan: `1.0 × ana vektör + 0.4 × ad + 0.5 × kategori + 0.1 × marka`.
 Her benzerlik `(cosine + 1) / 2` ölçeğindedir. Ana vektörü olmayan kayıtlar dahil edilmez; eksik v2 alanının
 boost'u sıfırdır. `constant_score` kullanılmaz; ana vektörün benzerlik farkları korunur. Katsayılar
-`ProductVectorQuery::BASE_WEIGHT` ve `WEIGHTS` içindedir. Toplam skor 0–2 aralığındadır, olasılık değildir.
-Vektörler yanıtta gizlenir; `version` ve ana vektör dahil `weights` döner.
+`ProductVectorQuery::DEFAULT_WEIGHTS` içinde tanımlıdır. Varsayılan toplam skor 0–2 aralığındadır, olasılık değildir.
+Vektörler ürün verisiyle birlikte yanıtta bulunur; `version` ve kullanılan `weights` döner.
 
 Bu yöntem filtreye uyan ve ana vektörü bulunan bütün ürünlerde benzerlik hesaplar. V1'in yaklaşık kNN aramasına
 göre büyük kataloglarda daha fazla CPU ve süre gerektirir; `limit` düşürmek bu hesaplama yükünü azaltmaz.
@@ -270,8 +284,7 @@ V2 kodu ayrı namespace altında düzenlenmiştir:
 
 - `Controller/V2/SearchController`: HTTP isteği ve yanıtı.
 - `Service/V2/Search/ElasticSearchService`: embedding ve Elasticsearch çağrılarının koordinasyonu.
-- `Service/V2/Search/QueryBuilder/QueryBuilder`: fluent `applyFilter`, `vector`, `size`, `source`, `build`.
-- `QueryBuilder/Filter`: marka ve kategori filtreleri.
+- `Service/V2/Search/QueryBuilder/QueryBuilder`: fluent `vector`, `weights`, `size`, `page`, `source`, `build`.
 - `QueryBuilder/ProductVectorQuery`: ana vektör skoru ve alan boost’larını içeren tek sorgu.
 - `Service/V2/Index/FieldVectors` ve `Command/V2/IndexCommand`: v2 vektör üretimi ve aktarımı.
 
