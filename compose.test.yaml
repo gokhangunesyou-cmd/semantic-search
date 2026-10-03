@@ -2,6 +2,8 @@
 services:
   postgres:
     ports: !override []
+  kafbat-ui:
+    ports: !override ["127.0.0.1:18081:8080"]
   search-api:
     ports: ["127.0.0.1:18080:80"]
     mem_limit: 384m

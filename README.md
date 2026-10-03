@@ -87,12 +87,16 @@ PostgreSQL kendi veritabanını hazırlar; uygulama tabloları `search-api` baş
 PostgreSQL `wal_level=logical` ile başlar. `app:db:init`, `public.products` için `app_cdc` publication'ını
 oluşturur; publication zaten varsa korur. Kafka, Compose ağı içinde `kafka:9092` adresinde çalışır ve verilerini
 `kafka_data` volume'unda tutar. Debezium connector henüz kurulmadığı için değişiklikler Kafka'ya gönderilmez.
+Kafbat UI, Kafka'nın healthy olmasını bekleyerek açılır. Yönetim arayüzü, varsayılan olarak sunucunun yerel ağındaki
+`http://192.168.1.105:8080` adresindedir; sunucu IP'si farklıysa `KAFBAT_BIND_IP` değiştirilir. Giriş için
+`KAFBAT_USER` ve `KAFBAT_PASSWORD` Coolify environment alanında tanımlanır. Kafbat'tan topic oluşturulup ayarları
+yönetilebilir. Debezium henüz kurulmadığı için `products` değişikliklerini taşıyan bir topic görünmez.
 
 Eski deployment'ta `001-products.sql: Is a directory` hatası görüldüyse düzeltilmiş Compose dosyasını deploy edin. Mevcut PostgreSQL volume'unu koruyun: DB zaten oluşmuş olsa bile eksik uygulama tabloları Symfony başlangıcında tamamlanır. İlk kurulum başarısız olduktan sonra PostgreSQL'in `healthy` görünmesi tek başına ürün tablolarının oluştuğunu göstermez.
 
 Kaynak bütçeleri: Elasticsearch 3 GiB (1,5 GiB heap), embedding en fazla 3 GiB, Symfony 768 MiB, PostgreSQL 384 MiB,
-Kafka 1 GiB (512 MiB heap). `model-init` 512 MiB limitlidir ve embedding başlamadan tamamlanır. Trendyol modeli seçilince
-hostta daha fazla boş bellek gerekir; gerçek tüketim sunucuda ölçülmelidir.
+Kafka 1 GiB (512 MiB heap), Kafbat UI 768 MiB (384 MiB heap). `model-init` 512 MiB limitlidir ve embedding başlamadan
+tamamlanır. Trendyol modeli seçilince hostta daha fazla boş bellek gerekir; gerçek tüketim sunucuda ölçülmelidir.
 
 ### Elasticsearch'e yerel ağdan erişim
 

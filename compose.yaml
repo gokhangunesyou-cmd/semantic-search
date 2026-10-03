@@ -49,6 +49,22 @@ services:
       retries: 10
     restart: unless-stopped
 
+  kafbat-ui:
+    image: ghcr.io/kafbat/kafka-ui:v1.5.0
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: semantic-search
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      AUTH_TYPE: LOGIN_FORM
+      SPRING_SECURITY_USER_NAME: ${KAFBAT_USER:-admin}
+      SPRING_SECURITY_USER_PASSWORD: ${KAFBAT_PASSWORD:?required}
+      JAVA_TOOL_OPTIONS: -Xms128m -Xmx384m
+    depends_on:
+      kafka: { condition: service_healthy }
+    mem_limit: 768m
+    restart: unless-stopped
+
   elasticsearch:
     image: elasticsearch:8.19.14
     ports:
