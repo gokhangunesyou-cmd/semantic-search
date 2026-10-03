@@ -88,8 +88,8 @@ PostgreSQL `wal_level=logical` ile başlar. `app:db:init`, `public.products` iç
 oluşturur; publication zaten varsa korur. Kafka, Compose ağı içinde `kafka:9092` adresinde çalışır ve verilerini
 `kafka_data` volume'unda tutar. `kafka-data-init`, Kafka başlamadan önce bu volume'un yazma iznini UID 1000'e verir;
 volume'u silmez. Debezium connector henüz kurulmadığı için değişiklikler Kafka'ya gönderilmez.
-Kafbat UI, Kafka'nın healthy olmasını bekleyerek açılır. Yönetim arayüzü, varsayılan olarak sunucunun yerel ağındaki
-`http://192.168.1.105:8080` adresindedir; sunucu IP'si farklıysa `KAFBAT_BIND_IP` değiştirilir. Giriş için
+Kafbat UI, Kafka'nın healthy olmasını bekleyerek açılır. Yönetim arayüzü sunucunun `8181` portunda çalışır;
+yerel ağdaki örnek adresi `http://192.168.1.105:8181` olur. Giriş için
 `KAFBAT_USER` ve `KAFBAT_PASSWORD` Coolify environment alanında tanımlanır. Kafbat'tan topic oluşturulup ayarları
 yönetilebilir. Debezium henüz kurulmadığı için `products` değişikliklerini taşıyan bir topic görünmez.
 
