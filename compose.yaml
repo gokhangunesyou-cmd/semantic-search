@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:?required}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
       POSTGRES_DB: ${POSTGRES_DB:-semantic}
-    command: [ "postgres", "-c", "shared_buffers=128MB", "-c", "max_connections=20" ]
+    command: [ "postgres", "-c", "shared_buffers=128MB", "-c", "max_connections=20", "-c", "wal_level=logical" ]
     volumes:
       - postgres_data:/var/lib/postgresql/data
     mem_limit: 384m

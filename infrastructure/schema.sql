@@ -16,3 +16,10 @@ CREATE TABLE IF NOT EXISTS product_index_state (
     semantic JSONB,
     PRIMARY KEY (product_id, index_uuid)
 );
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'app_cdc') THEN
+        CREATE PUBLICATION app_cdc FOR TABLE public.products;
+    END IF;
+END
+$$;
