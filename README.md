@@ -74,7 +74,8 @@ Bu proje Coolify üzerinden çalıştırılır. Kod ve yapılandırma değişikl
 2. `.env.example` içindeki değişkenleri Coolify environment alanında gerçek ve farklı parolalarla tanımlayın. `.env` dosyasını Git'e göndermeyin.
 3. Ubuntu hostta Elasticsearch için `vm.max_map_count` değerini en az `262144` yapın ve `/etc/sysctl.d/` altında kalıcılaştırın.
 4. Deploy edin. `model-init` tamamlanıp model hazır olduğunda Python healthcheck başarılı olur. İlk model indirmesi zaman alabilir. Symfony, PostgreSQL/Elasticsearch/model hazır olduğunda başlar; kendi imajındaki SQL dosyasıyla tabloları oluşturup Apache'yi çalıştırır.
-5. Tüneli yalnızca `search-api` servisine, port `80` üzerinden bağlayın. Elasticsearch ayrıca sunucunun yerel IP'sinde `9200` portunu yayınlar; PostgreSQL ve embedding host portu yayınlamaz.
+5. Tüneli yalnızca `search-api` servisine, port `80` üzerinden bağlayın. Elasticsearch sunucunun yerel IP'sinde
+   `9200`, PostgreSQL `5432` portunu yayınlar; embedding host portu yayınlamaz.
 6. Search API terminalinde aşağıdaki komutları çalıştırın:
 
 ```bash
@@ -100,6 +101,15 @@ curl -u elastic http://192.168.1.105:9200/
 HTTP 401, servise erişildiğini ancak kimlik doğrulamanın başarısız veya eksik olduğunu gösterir. Bağlantı reddi/zaman aşımında Coolify deployment durumu, port eşlemesi ve sunucunun güvenlik duvarı kontrol edilir. Mevcut HTTP yapılandırmasında trafik şifrelenmez; bu erişim güvenilen yerel ağ içindir.
 
 Yerel testte `compose.test.yaml`, `!override` ile bu eşlemeyi yalnızca `127.0.0.1:19200:9200` olarak değiştirir; yerel Docker Compose 2.24.4 veya üzeri gerekir.
+
+### PostgreSQL'e yerel ağdan erişim
+
+`compose.yaml`, PostgreSQL portunu `5432:5432` olarak sunucunun tüm ağ arayüzlerinde yayınlar. Aynı ağdaki
+bilgisayardan mevcut sunucu IP'sinin `5432` portuna bağlanın; IP değişirse bağlantı adresini güncelleyin. Veritabanı,
+kullanıcı adı ve parola sırasıyla Coolify'daki `POSTGRES_DB`, `POSTGRES_USER` ve `POSTGRES_PASSWORD` değerleridir.
+
+Yerel testte `compose.test.yaml` PostgreSQL port eşlemesini kaldırır. Bu bağlantı güvenilen yerel ağ içindir;
+sunucunun güvenlik duvarında `5432` portunu yalnızca yerel ağa açık tutun.
 
 ## DB'ye ürün yükleme ve Elasticsearch'e aktarma
 

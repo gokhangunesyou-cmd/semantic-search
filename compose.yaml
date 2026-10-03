@@ -2,16 +2,18 @@ name: semantic-search
 services:
   postgres:
     image: postgres:16.13-alpine
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER:?required}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
       POSTGRES_DB: ${POSTGRES_DB:-semantic}
-    command: ["postgres", "-c", "shared_buffers=128MB", "-c", "max_connections=20"]
+    command: [ "postgres", "-c", "shared_buffers=128MB", "-c", "max_connections=20" ]
     volumes:
       - postgres_data:/var/lib/postgresql/data
     mem_limit: 384m
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      test: [ "CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\"" ]
       start_period: 30s
       interval: 10s
       timeout: 5s
@@ -21,7 +23,7 @@ services:
   elasticsearch:
     image: elasticsearch:8.19.14
     ports:
-      - "${ELASTICSEARCH_BIND_IP:-192.168.1.105}:9200:9200"
+      - "9200:9200"
     environment:
       discovery.type: single-node
       xpack.security.enabled: "true"
@@ -35,7 +37,7 @@ services:
       - elastic_snapshots:/usr/share/elasticsearch/snapshots
     mem_limit: 3g
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS -u elastic:$$ELASTIC_PASSWORD http://localhost:9200/_cluster/health >/dev/null"]
+      test: [ "CMD-SHELL", "curl -fsS -u elastic:$$ELASTIC_PASSWORD http://localhost:9200/_cluster/health >/dev/null" ]
       interval: 15s
       timeout: 10s
       retries: 20
@@ -45,7 +47,7 @@ services:
     build:
       context: .
       dockerfile: embedding-api/Dockerfile
-    command: ["python", "download_model.py"]
+    command: [ "python", "download_model.py" ]
     environment:
       EMBEDDING_MODEL: ${EMBEDDING_MODEL:-intfloat/multilingual-e5-small}
       EMBEDDING_REVISION: ${EMBEDDING_REVISION:-}
@@ -70,9 +72,9 @@ services:
     mem_limit: 3g
     cpus: 2
     depends_on:
-      model-init: {condition: service_completed_successfully}
+      model-init: { condition: service_completed_successfully }
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/ready')"]
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/ready')" ]
       interval: 15s
       timeout: 5s
       start_period: 180s
@@ -84,7 +86,7 @@ services:
       context: .
       dockerfile: search-api/Dockerfile
     # schema.sql is baked into this image; no host-side SQL bind mount is needed.
-    command: ["sh", "-c", "php bin/console app:db:init && exec apache2-foreground"]
+    command: [ "sh", "-c", "php bin/console app:db:init && exec apache2-foreground" ]
     environment:
       APP_ENV: prod
       APP_SECRET: ${APP_SECRET:?required}
@@ -101,14 +103,14 @@ services:
       MODEL_FILE: ${MODEL_FILE:-onnx/model.onnx}
     volumes:
       - import_data:/data
-    expose: ["80"]
+    expose: [ "80" ]
     depends_on:
-      postgres: {condition: service_healthy}
-      elasticsearch: {condition: service_healthy}
-      embedding: {condition: service_healthy}
+      postgres: { condition: service_healthy }
+      elasticsearch: { condition: service_healthy }
+      embedding: { condition: service_healthy }
     mem_limit: 768m
     healthcheck:
-      test: ["CMD", "php", "-r", "exit(@file_get_contents('http://localhost/health/ready') === false ? 1 : 0);"]
+      test: [ "CMD", "php", "-r", "exit(@file_get_contents('http://localhost/health/ready') === false ? 1 : 0);" ]
       interval: 15s
       timeout: 5s
       retries: 10
