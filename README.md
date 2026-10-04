@@ -87,17 +87,27 @@ PostgreSQL kendi veritabanını hazırlar; uygulama tabloları `search-api` baş
 PostgreSQL `wal_level=logical` ile başlar. `app:db:init`, `public.products` için `app_cdc` publication'ını
 oluşturur; publication zaten varsa korur. Kafka, Compose ağı içinde `kafka:9092` adresinde çalışır ve verilerini
 `kafka_data` volume'unda tutar. `kafka-data-init`, Kafka başlamadan önce bu volume'un yazma iznini UID 1000'e verir;
-volume'u silmez. Debezium connector henüz kurulmadığı için değişiklikler Kafka'ya gönderilmez.
+volume'u silmez. `debezium-connect-worker`, Debezium eklentisi bulunan ve sürekli çalışan Kafka Connect servisidir.
+Worker ayarlarını, offsetlerini ve durumunu Kafka'daki `_connect_*` topic'lerinde tutar.
+`APP_CDC_PASSWORD`, Coolify environment alanında PostgreSQL'deki `app_cdc` kullanıcısının parolasıyla aynı olmalıdır;
+connector ayarında gerçek parola yerine `${env:APP_CDC_PASSWORD}` yazılabilir. Worker deploy edildiğinde PostgreSQL
+connector'ı otomatik oluşturulmaz. Connector, Kafbat UI'daki Kafka Connect bölümünden elle kaydedilir; Kafbat bu ayarları
+worker'ın `8083` portundaki REST API'sine iletir. Bu port yalnızca Compose ağı içindedir. Kayıt sırasında `pgoutput`,
+mevcut `app_cdc` publication'ı, `app_cdc_slot` slot adı ve `public.products` tablosu seçilir. Connector ilk başladığında
+slot'u oluşturur ve `app_cdc.public.products` topic'ine değişiklikleri gönderir. `snapshot.mode=no_data` mevcut ürünleri
+ilk açılışta göndermez. Connector dururken slot WAL'ı tutabilir; uzun kesintilerde disk kullanımı izlenmelidir.
 Kafbat UI, Kafka'nın healthy olmasını bekleyerek açılır. Yönetim arayüzü sunucunun `8181` portunda çalışır;
 yerel ağdaki örnek adresi `http://192.168.1.105:8181` olur. Giriş için
 `KAFBAT_USER` ve `KAFBAT_PASSWORD` Coolify environment alanında tanımlanır. Kafbat'tan topic oluşturulup ayarları
-yönetilebilir. Debezium henüz kurulmadığı için `products` değişikliklerini taşıyan bir topic görünmez.
+yönetilebilir. Kafka Connect worker'ı Kafbat'ta görünür. `app-cdc` connector'ı elle kaydedildikten sonra Kafbat'ta
+görülebilir, düzenlenebilir, duraklatılabilir ve yeniden başlatılabilir.
 
 Eski deployment'ta `001-products.sql: Is a directory` hatası görüldüyse düzeltilmiş Compose dosyasını deploy edin. Mevcut PostgreSQL volume'unu koruyun: DB zaten oluşmuş olsa bile eksik uygulama tabloları Symfony başlangıcında tamamlanır. İlk kurulum başarısız olduktan sonra PostgreSQL'in `healthy` görünmesi tek başına ürün tablolarının oluştuğunu göstermez.
 
 Kaynak bütçeleri: Elasticsearch 3 GiB (1,5 GiB heap), embedding en fazla 3 GiB, Symfony 768 MiB, PostgreSQL 384 MiB,
-Kafka 1 GiB (512 MiB heap), Kafbat UI 768 MiB (384 MiB heap). `model-init` 512 MiB limitlidir ve embedding başlamadan
-tamamlanır. Trendyol modeli seçilince hostta daha fazla boş bellek gerekir; gerçek tüketim sunucuda ölçülmelidir.
+Kafka 1 GiB (512 MiB heap), Kafka Connect 768 MiB (512 MiB heap), Kafbat UI 768 MiB (384 MiB heap).
+`model-init` 512 MiB limitlidir ve embedding başlamadan tamamlanır. Trendyol modeli seçilince hostta daha fazla boş
+bellek gerekir; gerçek tüketim sunucuda ölçülmelidir.
 
 ### Elasticsearch'e yerel ağdan erişim
 
